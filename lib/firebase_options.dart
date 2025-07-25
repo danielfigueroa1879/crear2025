@@ -9,9 +9,10 @@ import 'package:flutter/foundation.dart'
 /// **CRUCIAL:** Reemplaza los valores de este archivo con las credenciales
 /// de la configuración de la aplicación web de TU PROPIO proyecto de Firebase.
 ///
+/// CÓMO OBTENER TUS CREDENCIALES:
 /// 1. Ve a la consola de Firebase: https://console.firebase.google.com/
 /// 2. Selecciona tu proyecto.
-/// 3. Ve a "Configuración del proyecto" (el ícono de engranaje).
+/// 3. Ve a "Configuración del proyecto" (el ícono de engranaje ⚙️ en el menú de la izquierda).
 /// 4. En la pestaña "General", en la sección "Tus apps", selecciona o crea una app web.
 /// 5. Busca el objeto de configuración `firebaseConfig` y copia los valores aquí.
 ///
@@ -21,8 +22,8 @@ class DefaultFirebaseOptions {
       // Esta es la configuración para la versión WEB de tu app.
       return web;
     }
-    // Puedes agregar configuraciones para otras plataformas (Android, iOS) aquí.
-    // Por ahora, nos enfocamos en la web.
+    // El resto de esta lógica es para plataformas móviles, que no están configuradas.
+    // Puedes ignorarlo si solo estás desarrollando para la web.
     switch (defaultTargetPlatform) {
       case TargetPlatform.android:
         throw UnsupportedError(
@@ -56,13 +57,14 @@ class DefaultFirebaseOptions {
     }
   }
 
-  /// **REEMPLAZA ESTOS VALORES CON LOS DE TU PROYECTO DE FIREBASE**
+  /// **▼▼▼ REEMPLAZA ESTOS VALORES CON LOS DE TU PROYECTO DE FIREBASE ▼▼▼**
   static const FirebaseOptions web = FirebaseOptions(
-    apiKey: "TU_API_KEY_AQUI", // Reemplazar
-    appId: "TU_APP_ID_AQUI", // Reemplazar
-    messagingSenderId: "TU_MESSAGING_SENDER_ID_AQUI", // Reemplazar
-    projectId: "TU_PROJECT_ID_AQUI", // Reemplazar
+    apiKey: "AIzaSy...REEMPLAZA_CON_TU_API_KEY", // Reemplazar
+    appId: "1:1234567890:web:REEMPLAZA_CON_TU_APP_ID", // Reemplazar
+    messagingSenderId: "REEMPLAZA_CON_TU_SENDER_ID", // Reemplazar
+    projectId: "REEMPLAZA_CON_TU_PROJECT_ID", // Reemplazar
     authDomain: "TU_PROJECT_ID.firebaseapp.com", // Reemplazar
     storageBucket: "TU_PROJECT_ID.appspot.com", // Reemplazar
   );
+  /// **▲▲▲ REEMPLAZA ESTOS VALORES CON LOS DE TU PROYECTO DE FIREBASE ▲▲▲**
 }
