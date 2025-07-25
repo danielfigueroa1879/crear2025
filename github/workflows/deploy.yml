@@ -29,10 +29,11 @@ jobs:
       - name: Install dependencies
         run: flutter pub get
 
-      # 4. Compila la aplicación para la web
-      # El resultado se guardará en la carpeta /build/web
+      # 4. Compila la aplicación para la web con la ruta base correcta
+      # Esto es CRUCIAL para que funcione en GitHub Pages.
+      # Obtiene el nombre del repositorio (ej: "mi-app") y lo usa como ruta base.
       - name: Build Flutter web app
-        run: flutter build web --release
+        run: flutter build web --release --base-href /${{ github.event.repository.name }}/
 
       # 5. Sube los archivos compilados para que GitHub Pages los pueda mostrar
       - name: Deploy to GitHub Pages
