@@ -58,12 +58,3 @@ class DefaultFirebaseOptions {
   );
   /// **▲▲▲ ¡Esta configuración está lista para usar! ▲▲▲**
 }
-```
-
-### Próximos Pasos
-
-1.  **Reemplaza el contenido** de tu archivo `lib/firebase_options.dart` con el código de arriba.
-2.  **Guarda** el archivo.
-3.  **Reinicia por completo tu aplicación de Flutter.** No uses "Hot Reload", es mejor hacer un "Hot Restart" o detener y volver a ejecutar la aplicación para asegurar que la nueva configuración de Firebase se cargue correctamente.
-
-Con esto, tu aplicación ya debería poder conectarse a Firebase sin problemas. ¡Pruébalo y me dices cómo te 
