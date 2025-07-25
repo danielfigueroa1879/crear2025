@@ -1,0 +1,44 @@
+# Nombre del flujo de trabajo que aparecerá en la pestaña "Actions" de GitHub
+name: Deploy Flutter Web to GitHub Pages
+
+# Configura cuándo se debe ejecutar este flujo de trabajo
+on:
+  # Se ejecuta cada vez que haces un "push" a la rama "main"
+  push:
+    branches:
+      - main # O la rama principal que uses, ej: master
+
+jobs:
+  # Define un "trabajo" llamado "build_and_deploy"
+  build_and_deploy:
+    # El tipo de máquina virtual en la que se ejecutará el trabajo
+    runs-on: ubuntu-latest
+
+    steps:
+      # 1. Descarga el código de tu repositorio
+      - name: Checkout repository
+        uses: actions/checkout@v3
+
+      # 2. Configura el entorno de Flutter
+      - name: Setup Flutter
+        uses: subosito/flutter-action@v2
+        with:
+          channel: 'stable' # Usa la versión estable de Flutter
+
+      # 3. Instala las dependencias del proyecto
+      - name: Install dependencies
+        run: flutter pub get
+
+      # 4. Compila la aplicación para la web
+      # El resultado se guardará en la carpeta /build/web
+      - name: Build Flutter web app
+        run: flutter build web --release
+
+      # 5. Sube los archivos compilados para que GitHub Pages los pueda mostrar
+      - name: Deploy to GitHub Pages
+        uses: peaceiris/actions-gh-pages@v3
+        with:
+          # El token es necesario para permitir que la acción escriba en tu repositorio
+          github_token: ${{ secrets.GITHUB_TOKEN }}
+          # La carpeta que contiene los archivos web compilados
+          publish_dir: ./build/web
