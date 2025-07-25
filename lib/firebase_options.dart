@@ -6,24 +6,14 @@ import 'package:flutter/foundation.dart'
 
 /// Default [FirebaseOptions] for use with your Firebase apps.
 ///
-/// **CRUCIAL:** Reemplaza los valores de este archivo con las credenciales
-/// de la configuración de la aplicación web de TU PROPIO proyecto de Firebase.
-///
-/// CÓMO OBTENER TUS CREDENCIALES:
-/// 1. Ve a la consola de Firebase: https://console.firebase.google.com/
-/// 2. Selecciona tu proyecto.
-/// 3. Ve a "Configuración del proyecto" (el ícono de engranaje ⚙️ en el menú de la izquierda).
-/// 4. En la pestaña "General", en la sección "Tus apps", selecciona o crea una app web.
-/// 5. Busca el objeto de configuración `firebaseConfig` y copia los valores aquí.
-///
+/// Estas son las credenciales para tu proyecto específico de Firebase.
 class DefaultFirebaseOptions {
   static FirebaseOptions get currentPlatform {
     if (kIsWeb) {
-      // Esta es la configuración para la versión WEB de tu app.
+      // Configuración para la versión WEB de tu app.
       return web;
     }
-    // El resto de esta lógica es para plataformas móviles, que no están configuradas.
-    // Puedes ignorarlo si solo estás desarrollando para la web.
+    // La lógica para otras plataformas no está configurada.
     switch (defaultTargetPlatform) {
       case TargetPlatform.android:
         throw UnsupportedError(
@@ -57,14 +47,23 @@ class DefaultFirebaseOptions {
     }
   }
 
-  /// **▼▼▼ REEMPLAZA ESTOS VALORES CON LOS DE TU PROYECTO DE FIREBASE ▼▼▼**
+  /// **▼▼▼ Configuración de Firebase para tu proyecto "bitacora-5f0fe" ▼▼▼**
   static const FirebaseOptions web = FirebaseOptions(
-    apiKey: "AIzaSy...REEMPLAZA_CON_TU_API_KEY", // Reemplazar
-    appId: "1:1234567890:web:REEMPLAZA_CON_TU_APP_ID", // Reemplazar
-    messagingSenderId: "REEMPLAZA_CON_TU_SENDER_ID", // Reemplazar
-    projectId: "REEMPLAZA_CON_TU_PROJECT_ID", // Reemplazar
-    authDomain: "TU_PROJECT_ID.firebaseapp.com", // Reemplazar
-    storageBucket: "TU_PROJECT_ID.appspot.com", // Reemplazar
+    apiKey: "AIzaSyCE98me59kyJr_bN5YI8sjDdFLznz6X3WE",
+    appId: "1:810728555827:web:2c98a7f19e5620286c2a46",
+    messagingSenderId: "810728555827",
+    projectId: "bitacora-5f0fe",
+    authDomain: "bitacora-5f0fe.firebaseapp.com",
+    storageBucket: "bitacora-5f0fe.appspot.com",
   );
-  /// **▲▲▲ REEMPLAZA ESTOS VALORES CON LOS DE TU PROYECTO DE FIREBASE ▲▲▲**
+  /// **▲▲▲ ¡Esta configuración está lista para usar! ▲▲▲**
 }
+```
+
+### Próximos Pasos
+
+1.  **Reemplaza el contenido** de tu archivo `lib/firebase_options.dart` con el código de arriba.
+2.  **Guarda** el archivo.
+3.  **Reinicia por completo tu aplicación de Flutter.** No uses "Hot Reload", es mejor hacer un "Hot Restart" o detener y volver a ejecutar la aplicación para asegurar que la nueva configuración de Firebase se cargue correctamente.
+
+Con esto, tu aplicación ya debería poder conectarse a Firebase sin problemas. ¡Pruébalo y me dices cómo te 
