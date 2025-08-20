@@ -39,23 +39,25 @@
             overflow: hidden;
             background-color: #2d2d2d;
         }
-        .editor, .preview {
+        .editor-section { /* Contenedor para los editores y sus redimensionadores */
             flex-grow: 1;
             padding: 20px;
             box-sizing: border-box;
-            min-width: 200px; /* Ancho mínimo para evitar que se colapsen */
+            min-width: 200px;
             display: flex;
-            flex-direction: column;
-        }
-        .editor {
+            flex-direction: column; /* Apilar los editores verticalmente */
             background-color: #2d2d2d;
             position: relative;
         }
         .preview {
+            flex-grow: 1;
             background-color: #ffffff;
             color: #1e1e1e;
             display: flex;
             flex-direction: column;
+            padding: 20px; /* Añadir padding a la vista previa */
+            box-sizing: border-box;
+            min-width: 200px; /* Ancho mínimo para la vista previa */
         }
         h2 {
             color: #ffffff;
@@ -66,11 +68,12 @@
             color: #1e1e1e;
         }
         .monaco-editor-container {
-            flex: 1;
-            margin-bottom: 15px;
+            flex: 1; /* Permite que cada editor ocupe el espacio disponible */
+            margin-bottom: 15px; /* Espacio antes del siguiente editor o botón */
             border: 1px solid #555;
             border-radius: 4px;
             overflow: hidden;
+            min-height: 50px; /* Altura mínima para cada editor */
         }
         label {
             color: #ffffff;
@@ -89,6 +92,7 @@
             cursor: pointer;
             font-size: 16px;
             transition: background-color 0.3s ease;
+            margin-top: auto; /* Empuja el botón hacia abajo */
         }
         button:hover {
             background-color: #45a049;
@@ -100,14 +104,27 @@
         #downloadBtn:hover {
             background-color: #007B9A;
         }
-        .resizer {
+        /* Resizer Horizontal (entre editor y preview) */
+        .resizer-horizontal {
             width: 8px;
             background-color: #444;
             cursor: ew-resize;
             flex-shrink: 0;
             transition: background-color 0.2s ease;
         }
-        .resizer:hover {
+        .resizer-horizontal:hover {
+            background-color: #008CBA;
+        }
+        /* Resizer Vertical (entre los editores de código) */
+        .resizer-vertical {
+            height: 8px;
+            background-color: #444;
+            cursor: ns-resize;
+            flex-shrink: 0;
+            margin-bottom: 15px; /* Alineado con el margen de los contenedores de Monaco */
+            transition: background-color 0.2s ease;
+        }
+        .resizer-vertical:hover {
             background-color: #008CBA;
         }
         iframe {
@@ -124,16 +141,16 @@
                 flex-direction: column;
                 margin: 20px;
             }
-            .editor, .preview {
+            .editor-section, .preview {
                 min-width: auto;
                 width: 100%;
             }
-            .resizer {
+            .resizer-horizontal {
                 width: 100%;
                 height: 8px;
                 cursor: ns-resize;
             }
-            .editor {
+            .editor-section {
                 border-bottom: 1px solid #444;
             }
             .preview {
@@ -147,21 +164,25 @@
     <p id="description-text">Esta herramienta facilita la creación de páginas web para todos. Ingresa tu contenido en HTML, CSS y JavaScript, y visualiza el resultado en tiempo real. Puedes descargar la página generada como un archivo HTML completo.</p>
     
     <div class="container">
-        <div class="editor" id="editorPanel">
+        <div class="editor-section" id="editorPanel">
             <h2>Editor</h2>
             <label for="htmlEditor">HTML:</label>
             <div id="htmlEditor" class="monaco-editor-container"></div>
             
+            <div class="resizer-vertical" id="resizerHtmlCss"></div>
+
             <label for="cssEditor">CSS:</label>
             <div id="cssEditor" class="monaco-editor-container"></div>
             
+            <div class="resizer-vertical" id="resizerCssJs"></div>
+
             <label for="jsEditor">JavaScript:</label>
             <div id="jsEditor" class="monaco-editor-container"></div>
             
             <button id="downloadBtn" onclick="downloadPage()">Descargar Página Web</button>
         </div>
         
-        <div class="resizer" id="resizer"></div>
+        <div class="resizer-horizontal" id="resizerHorizontal"></div>
 
         <div class="preview" id="previewPanel">
             <h2>Vista Previa</h2>
@@ -178,12 +199,28 @@
         require(['vs/editor/editor.main'], function() {
             // Inicializar editor HTML
             htmlEditor = monaco.editor.create(document.getElementById('htmlEditor'), {
-                value: `<h1>¡Hola Mundo!</h1>
-<p>Esta es tu página web personalizada.</p>`,
+                value: `<!DOCTYPE html>
+<html lang="es">
+<head>
+    <meta charset="UTF-8">
+    <meta name="viewport" content="width=device-width, initial-scale=1.0">
+    <title>Mi Página</title>
+</head>
+<body>
+    <h1>¡Hola desde HTML!</h1>
+    <p>Este es un párrafo de ejemplo.</p>
+    <button>Haz clic</button>
+</body>
+</html>`,
                 language: 'html',
                 theme: 'vs-dark', // Tema oscuro
                 automaticLayout: true, // Ajustar automáticamente el tamaño
-                minimap: { enabled: false } // Desactivar minimap
+                minimap: { enabled: false }, // Desactivar minimap
+                // Opciones para autocompletado y auto-cierre (generalmente activas por defecto)
+                autoClosingBrackets: 'always',
+                autoClosingQuotes: 'always',
+                autoClosingTags: true,
+                autoIndent: 'full'
             });
 
             // Inicializar editor CSS
@@ -191,12 +228,6 @@
                 value: `body { 
     background-color: #f0f8ff; 
     color: #333; 
-    display: flex; 
-    flex-direction: column; 
-    align-items: center; 
-    justify-content: center; 
-    min-height: 100vh; 
-    margin: 0; 
     font-family: 'Inter', sans-serif; 
 } 
 h1 { 
@@ -207,31 +238,42 @@ h1 {
 p { 
     color: #7f8c8d; 
     font-size: 1.2em; 
-    text-align: center; 
-    max-width: 600px; 
-    line-height: 1.6; 
+}
+button {
+    background-color: #4CAF50;
+    color: white;
+    padding: 10px 20px;
+    border: none;
+    border-radius: 5px;
+    cursor: pointer;
 }`,
                 language: 'css',
                 theme: 'vs-dark',
                 automaticLayout: true,
-                minimap: { enabled: false }
+                minimap: { enabled: false },
+                autoClosingBrackets: 'always',
+                autoClosingQuotes: 'always',
+                autoIndent: 'full'
             });
 
             // Inicializar editor JavaScript
             jsEditor = monaco.editor.create(document.getElementById('jsEditor'), {
                 value: `document.addEventListener('DOMContentLoaded', () => {
     console.log('¡Página creada con IA y lista!');
-    // Puedes añadir más interactividad aquí, por ejemplo:
-    // const greetingElement = document.querySelector('h1');
-    // greetingElement.addEventListener('click', () => {
-    //     // Usar un modal en lugar de alert para mejor UX
-    //     // showModal('¡Has hecho clic en el saludo!');
-    // });
+    const button = document.querySelector('button');
+    if (button) {
+        button.addEventListener('click', () => {
+            alert('¡Has hecho clic en el botón!'); // Considera usar un modal personalizado en lugar de alert()
+        });
+    }
 });`,
                 language: 'javascript',
                 theme: 'vs-dark',
                 automaticLayout: true,
-                minimap: { enabled: false }
+                minimap: { enabled: false },
+                autoClosingBrackets: 'always',
+                autoClosingQuotes: 'always',
+                autoIndent: 'full'
             });
 
             // Escuchar cambios en los editores y actualizar la vista previa
@@ -306,27 +348,28 @@ p {
             URL.revokeObjectURL(url);
         }
 
-        // Lógica de redimensionamiento
-        const resizer = document.getElementById('resizer');
+        /* --- Lógica de Redimensionamiento Horizontal (Editor vs. Preview) --- */
+        const resizerHorizontal = document.getElementById('resizerHorizontal');
         const editorPanel = document.getElementById('editorPanel');
         const previewPanel = document.getElementById('previewPanel');
         const container = document.querySelector('.container');
 
-        let isResizing = false;
+        let isResizingHorizontal = false;
 
-        resizer.addEventListener('mousedown', (e) => {
-            isResizing = true;
+        resizerHorizontal.addEventListener('mousedown', (e) => {
+            isResizingHorizontal = true;
             document.body.style.cursor = 'ew-resize';
             container.style.userSelect = 'none';
-            container.style.pointerEvents = 'none';
+            container.style.pointerEvents = 'none'; // Evitar interacción con los hijos durante el arrastre
         });
 
         document.addEventListener('mousemove', (e) => {
-            if (!isResizing) return;
+            if (!isResizingHorizontal) return;
 
             const isColumnLayout = window.matchMedia("(max-width: 768px)").matches;
 
             if (isColumnLayout) {
+                // Modo columna (móvil): el resizer horizontal actúa como vertical
                 const containerRect = container.getBoundingClientRect();
                 const newHeight = e.clientY - containerRect.top;
                 const totalHeight = containerRect.height;
@@ -337,6 +380,7 @@ p {
                     previewPanel.style.height = `${100 - editorHeightPercentage}%`;
                 }
             } else {
+                // Modo fila (escritorio): redimensionamiento horizontal
                 const containerRect = container.getBoundingClientRect();
                 const newWidth = e.clientX - containerRect.left;
                 const totalWidth = containerRect.width;
@@ -345,6 +389,7 @@ p {
                 if (editorWidthPercentage > 10 && editorWidthPercentage < 90) {
                     editorPanel.style.width = `${editorWidthPercentage}%`;
                     previewPanel.style.width = `${100 - editorWidthPercentage}%`;
+                    // Refrescar layout de Monaco para que se adapte al nuevo tamaño
                     if (htmlEditor) htmlEditor.layout();
                     if (cssEditor) cssEditor.layout();
                     if (jsEditor) jsEditor.layout();
@@ -353,13 +398,75 @@ p {
         });
 
         document.addEventListener('mouseup', () => {
-            if (!isResizing) return;
-            isResizing = false;
+            if (!isResizingHorizontal) return;
+            isResizingHorizontal = false;
             document.body.style.cursor = 'default';
             container.style.userSelect = 'auto';
             container.style.pointerEvents = 'auto';
         });
 
+        /* --- Lógica de Redimensionamiento Vertical (entre editores) --- */
+        function setupVerticalResizer(resizerId, topEditorId, bottomEditorId) {
+            const resizer = document.getElementById(resizerId);
+            const topEditorContainer = document.getElementById(topEditorId);
+            const bottomEditorContainer = document.getElementById(bottomEditorId);
+
+            let isResizingVertical = false;
+            let startY;
+            let startHeightTop;
+            let startHeightBottom;
+            let parentHeight;
+
+            resizer.addEventListener('mousedown', (e) => {
+                isResizingVertical = true;
+                e.preventDefault(); // Evitar selección de texto
+                document.body.style.cursor = 'ns-resize';
+                startY = e.clientY;
+                startHeightTop = topEditorContainer.offsetHeight;
+                startHeightBottom = bottomEditorContainer.offsetHeight;
+                parentHeight = editorPanel.offsetHeight; // Altura total del panel de editores
+            });
+
+            document.addEventListener('mousemove', (e) => {
+                if (!isResizingVertical) return;
+
+                const dy = e.clientY - startY; // Cambio en Y
+
+                // Calcular nuevas alturas en píxeles
+                let newHeightTop = startHeightTop + dy;
+                let newHeightBottom = startHeightBottom - dy;
+
+                // Límites mínimos de altura para cada editor (ej. 50px)
+                const minHeightPx = 50;
+
+                if (newHeightTop < minHeightPx || newHeightBottom < minHeightPx) {
+                    return; // No permitir que se encojan más allá del mínimo
+                }
+                
+                // Aplicar las nuevas alturas (se pueden usar porcentajes si se prefiere)
+                topEditorContainer.style.height = `${newHeightTop}px`;
+                bottomEditorContainer.style.height = `${newHeightBottom}px`;
+
+                // Forzar el redibujado de Monaco para los editores afectados
+                if (topEditorId === 'htmlEditor' && htmlEditor) htmlEditor.layout();
+                if (topEditorId === 'cssEditor' && cssEditor) cssEditor.layout();
+                if (bottomEditorId === 'cssEditor' && cssEditor) cssEditor.layout();
+                if (bottomEditorId === 'jsEditor' && jsEditor) jsEditor.layout();
+            });
+
+            document.addEventListener('mouseup', () => {
+                if (!isResizingVertical) return;
+                isResizingVertical = false;
+                document.body.style.cursor = 'default';
+            });
+        }
+
+        // Configurar los redimensionadores verticales
+        setupVerticalResizer('resizerHtmlCss', 'htmlEditor', 'cssEditor');
+        setupVerticalResizer('resizerCssJs', 'cssEditor', 'jsEditor');
+
+
+        // Asegurar que Monaco Editor se redimensione cuando la ventana cambie de tamaño
         window.addEventListener('resize', () => {
             if (htmlEditor) htmlEditor.layout();
             if (cssEditor) cssEditor.layout();
@@ -371,14 +478,14 @@ p {
             const descriptionText = document.getElementById('description-text');
             if (descriptionText) {
                 setTimeout(() => {
-                    descriptionText.style.opacity = '0'; // Iniciar la transición de opacidad
-                    // Después de que la transición termine, ocultar completamente el elemento
+                    descriptionText.style.opacity = '0';
                     descriptionText.addEventListener('transitionend', () => {
                         descriptionText.style.display = 'none';
-                    }, { once: true }); // Escuchar el evento solo una vez
+                    }, { once: true });
                 }, 10000); // 10 segundos
             }
         });
     </script>
 </body>
 </html>
+
