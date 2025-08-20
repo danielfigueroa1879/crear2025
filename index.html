@@ -234,7 +234,7 @@
         // Inicializar Monaco Editor
         require.config({ paths: { 'vs': 'https://cdnjs.cloudflare.com/ajax/libs/monaco-editor/0.34.1/min/vs' }});
         require(['vs/editor/editor.main'], function() {
-            // Editor HTML
+            // ✅ Editor HTML con cierre automático de etiquetas
             htmlEditor = monaco.editor.create(document.getElementById('htmlEditor'), {
                 value: `<!DOCTYPE html>
 <html lang="es">
@@ -255,8 +255,23 @@
                 minimap: { enabled: false },
                 autoClosingBrackets: 'always',
                 autoClosingQuotes: 'always',
-                autoClosingTags: true,
-                autoIndent: 'full'
+                autoClosingTags: true,  // ← Habilita cierre automático de <p>, <div>, etc.
+                autoIndent: 'full',
+                suggest: {
+                    showSnippets: true,
+                    insertMode: 'insert'
+                }
+            });
+
+            // Forzar que el modo HTML tenga cierre automático
+            monaco.languages.html.htmlDefaults.setOptions({
+                suggest: {
+                    showSnippets: true,
+                    insertMode: 'insert'
+                },
+                formatOnType: true,
+                formatOnPaste: true,
+                autoClosingTags: true
             });
 
             // Editor CSS
@@ -324,7 +339,7 @@ button {
             setupVerticalResizer('resizerHtmlCss', 'htmlEditor', 'cssEditor');
             setupVerticalResizer('resizerCssJs', 'cssEditor', 'jsEditor');
 
-            // ✅ Habilitar arrastre desde las orillas inferiores de los editores
+            // ✅ Habilitar arrastre desde las orillas inferiores
             setupDragHandles();
         });
 
@@ -442,7 +457,7 @@ button {
             container.style.pointerEvents = 'auto';
         });
 
-        /* --- Redimensionamiento Vertical entre editores (por resizer visible) --- */
+        /* --- Redimensionamiento Vertical entre editores (por resizer) --- */
         function setupVerticalResizer(resizerId, topId, bottomId) {
             const resizer = document.getElementById(resizerId);
             const top = document.getElementById(topId);
@@ -497,7 +512,7 @@ button {
             });
         }
 
-        /* --- Redimensionamiento desde la "orilla" inferior de cada editor --- */
+        /* --- Redimensionamiento desde la orilla inferior de cada editor --- */
         function setupDragHandles() {
             const handles = document.querySelectorAll('.drag-handle');
             handles.forEach(handle => {
@@ -588,7 +603,7 @@ button {
             fixedHeights += document.getElementById('resizerCssJs')?.offsetHeight || 0;
 
             const gap = parseFloat(getComputedStyle(editorPanel).gap);
-            fixedHeights += gap * 4; // 4 gaps
+            fixedHeights += gap * 4;
 
             const availableHeight = editorPanelClientHeight - fixedHeights;
             if (availableHeight <= 0) return;
