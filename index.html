@@ -3,630 +3,407 @@
 <head>
     <meta charset="UTF-8">
     <meta name="viewport" content="width=device-width, initial-scale=1.0">
-    <title>Creador de Páginas Web - Como CodePen</title>
-    <!-- Librerías: Monaco Editor, JSZip, FileSaver -->
-    <script src="https://cdnjs.cloudflare.com/ajax/libs/monaco-editor/0.34.1/min/vs/loader.min.js"></script>
-    <script src="https://cdnjs.cloudflare.com/ajax/libs/jszip/3.10.1/jszip.min.js"></script>
-    <script src="https://cdnjs.cloudflare.com/ajax/libs/FileSaver.js/2.0.5/FileSaver.min.js"></script>
+    <title>Editor Web</title>
     <style>
-        * {
-            box-sizing: border-box;
-        }
-
-        body {
-            font-family: -apple-system, BlinkMacSystemFont, 'Segoe UI', Roboto, Oxygen, Ubuntu, Cantarell, 'Open Sans', 'Helvetica Neue', sans-serif;
+        * { 
+            box-sizing: border-box; 
             margin: 0;
-            background-color: #1e1e1e;
+            padding: 0;
+        }
+        
+        body {
+            font-family: Arial, sans-serif;
+            background: #1e1e1e;
             color: #e0e0e0;
             display: flex;
             flex-direction: column;
             min-height: 100vh;
-        }
-
-        h1 {
-            text-align: center;
-            color: #ffffff;
-            padding: 10px 0;
-            margin: 0;
-            font-size: 1.6em;
-            background-color: #0d0d0d;
-            border-bottom: 1px solid #333;
-        }
-
-        #description-text {
-            text-align: center;
-            margin: 10px 0;
-            padding: 0 20px;
-            font-size: 0.9em;
-            color: #aaa;
-            transition: opacity 0.5s ease-out;
-        }
-
-        .container {
-            flex: 1;
-            display: flex;
-            gap: 0;
-            margin: 0;
-            border-radius: 0;
             overflow: hidden;
-            background-color: #252526;
         }
-
-        /* Editor Section */
+        
+        h1 {
+            padding: 15px;
+            text-align: center;
+            background: #0d0d0d;
+            border-bottom: 1px solid #333;
+            font-size: 1.6em;
+        }
+        
+        .container {
+            display: flex;
+            flex: 1;
+            overflow: hidden;
+        }
+        
         .editor-section {
             flex: 1;
+            background: #1e1e1e;
             display: flex;
             flex-direction: column;
-            background-color: #1e1e1e;
             min-width: 200px;
-            position: relative;
         }
-
-        /* Preview Section */
+        
         .preview {
             flex: 1;
-            background-color: #fff;
-            color: #1e1e1e;
+            background: #fff;
             display: flex;
             flex-direction: column;
-            position: relative;
+            min-width: 200px;
         }
-
-        h2 {
-            margin: 0;
-            padding: 8px 12px;
-            font-size: 1em;
-            font-weight: 600;
-            background-color: #2d2d2d;
+        
+        .section-header {
+            padding: 10px 15px;
+            background: #2d2d2d;
             border-bottom: 1px solid #444;
+            font-size: 0.9em;
+            font-weight: 600;
+            color: #fff;
         }
-
-        .preview h2 {
-            color: #ffffff;
+        
+        .editor-label {
+            padding: 8px 15px;
+            background: #252526;
+            font-size: 0.8em;
+            font-weight: bold;
+            color: #bbb;
+            border-bottom: 1px solid #333;
         }
-
-        /* Editor resizable wrapper */
-        .editor-resizable {
-            position: relative;
+        
+        .editor-wrapper {
             flex: 1;
             display: flex;
             flex-direction: column;
-            overflow: hidden;
+            min-height: 120px;
         }
-
-        label {
-            display: block;
-            padding: 6px 12px 2px;
-            font-size: 0.85em;
-            font-weight: bold;
-            color: #bbbbbb;
-            background-color: #252526;
-            margin: 0;
-        }
-
+        
         .monaco-editor-container {
             flex: 1;
-            border: none;
-            border-radius: 0;
-            overflow: hidden;
-            min-height: 50px;
+            min-height: 100px;
         }
-
-        /* Drag handle (bordes arrastrables) */
-        .drag-handle {
-            height: 8px;
-            position: absolute;
-            bottom: 0;
-            left: 0;
-            right: 0;
-            cursor: row-resize;
-            z-index: 10;
-            opacity: 0;
-            transition: opacity 0.2s ease, background 0.2s;
-        }
-
-        .drag-handle:hover {
-            opacity: 1;
-            background: rgba(0, 140, 186, 0.1);
-            border-top: 1px solid #008CBA;
-        }
-
-        /* Resizer Horizontal (entre editor y preview) - como CodePen */
-        .resizer-horizontal {
-            width: 6px;
-            background: linear-gradient(90deg, #1e1e1e, #444, #1e1e1e);
-            cursor: col-resize;
-            flex-shrink: 0;
-            position: relative;
-            z-index: 5;
-        }
-
-        .resizer-horizontal::before {
-            content: "⋮";
-            position: absolute;
-            top: 50%;
-            left: 50%;
-            transform: translate(-50%, -50%);
-            color: #888;
-            font-size: 1.3em;
-            pointer-events: none;
-        }
-
-        .resizer-horizontal:hover {
-            background: linear-gradient(90deg, #1e1e1e, #008CBA, #1e1e1e);
-        }
-
-        .resizer-horizontal:hover::before {
-            color: #008CBA;
-        }
-
-        /* Resizer Vertical (entre editores) */
+        
         .resizer-vertical {
             height: 6px;
-            background: linear-gradient(180deg, #1e1e1e, #444, #1e1e1e);
+            background: #444;
             cursor: row-resize;
-            flex-shrink: 0;
-            position: relative;
-            z-index: 5;
+            border-top: 1px solid #333;
+            border-bottom: 1px solid #333;
         }
-
-        .resizer-vertical::before {
-            content: "⋯";
-            position: absolute;
-            top: 50%;
-            left: 50%;
-            transform: translate(-50%, -50%);
-            color: #888;
-            font-size: 1.4em;
-            pointer-events: none;
-        }
-
+        
         .resizer-vertical:hover {
-            background: linear-gradient(180deg, #1e1e1e, #008CBA, #1e1e1e);
+            background: #008CBA;
         }
-
-        .resizer-vertical:hover::before {
-            color: #008CBA;
+        
+        .resizer-horizontal {
+            width: 6px;
+            background: #444;
+            cursor: col-resize;
         }
-
-        /* Vista previa */
-        .preview-frame-container {
-            flex: 1;
-            background: #fff;
-            border: none;
-            border-radius: 0;
-            overflow: hidden;
+        
+        .resizer-horizontal:hover {
+            background: #008CBA;
         }
-
+        
         #previewFrame {
             width: 100%;
             height: 100%;
             border: none;
-            display: block;
+            background: #fff;
+            flex: 1;
         }
-
-        /* Botón */
-        button {
-            display: block;
-            width: 100%;
-            padding: 10px;
-            background-color: #008CBA;
+        
+        .download-button {
+            padding: 15px;
+            background: #008CBA;
             color: white;
             border: none;
-            border-top: 1px solid #005f7f;
             cursor: pointer;
-            font-size: 15px;
             font-weight: 600;
-            transition: background-color 0.3s ease;
         }
-
-        button:hover {
-            background-color: #007B9A;
+        
+        .download-button:hover {
+            background: #007B9A;
         }
-
+        
         @media (max-width: 768px) {
-            .container {
-                flex-direction: column;
+            .container { 
+                flex-direction: column; 
             }
+            
             .resizer-horizontal {
                 width: 100%;
                 height: 6px;
-            }
-            .resizer-horizontal::before {
-                transform: translate(-50%, -50%) rotate(90deg);
+                cursor: row-resize;
             }
         }
     </style>
 </head>
 <body>
-    <h1>Creador de Páginas Web</h1>
-    <p id="description-text">Esta herramienta facilita la creación de páginas web. Edita en tiempo real y descarga tu proyecto como una carpeta completa.</p>
-
+    <h1>Editor de Páginas Web</h1>
+    
     <div class="container">
-        <!-- Panel de Editores -->
         <div class="editor-section" id="editorPanel">
-            <label for="htmlEditor">HTML</label>
-            <div class="editor-resizable" id="htmlEditorWrapper">
+            <div class="section-header">Editor de Código</div>
+            
+            <div class="editor-label">HTML</div>
+            <div class="editor-wrapper" id="htmlEditorWrapper">
                 <div id="htmlEditor" class="monaco-editor-container"></div>
-                <div class="drag-handle" data-target="htmlEditor"></div>
             </div>
-
+            
             <div class="resizer-vertical" id="resizerHtmlCss"></div>
-
-            <label for="cssEditor">CSS</label>
-            <div class="editor-resizable" id="cssEditorWrapper">
+            
+            <div class="editor-label">CSS</div>
+            <div class="editor-wrapper" id="cssEditorWrapper">
                 <div id="cssEditor" class="monaco-editor-container"></div>
-                <div class="drag-handle" data-target="cssEditor"></div>
             </div>
-
+            
             <div class="resizer-vertical" id="resizerCssJs"></div>
-
-            <label for="jsEditor">JS</label>
-            <div class="editor-resizable" id="jsEditorWrapper">
+            
+            <div class="editor-label">JavaScript</div>
+            <div class="editor-wrapper" id="jsEditorWrapper">
                 <div id="jsEditor" class="monaco-editor-container"></div>
-                <div class="drag-handle" data-target="jsEditor"></div>
             </div>
-
-            <button id="downloadBtn" onclick="downloadPage()">Descargar Proyecto (.zip)</button>
+            
+            <button class="download-button" onclick="downloadFiles()">Descargar HTML</button>
         </div>
-
-        <!-- Separador vertical -->
+        
         <div class="resizer-horizontal" id="resizerHorizontal"></div>
-
-        <!-- Vista Previa -->
-        <div class="preview" id="previewPanel">
-            <h2>Vista Previa</h2>
-            <div class="preview-frame-container">
-                <iframe id="previewFrame"></iframe>
-            </div>
+        
+        <div class="preview">
+            <div class="section-header">Vista Previa</div>
+            <iframe id="previewFrame"></iframe>
         </div>
     </div>
 
+    <script src="https://cdnjs.cloudflare.com/ajax/libs/monaco-editor/0.34.1/min/vs/loader.min.js"></script>
     <script>
-        let htmlEditor, cssEditor, jsEditor;
-
-        // Cargar Monaco Editor
-        require.config({ paths: { 'vs': 'https://cdnjs.cloudflare.com/ajax/libs/monaco-editor/0.34.1/min/vs' }});
+        var htmlEditor, cssEditor, jsEditor;
+        
+        require.config({ 
+            paths: { 'vs': 'https://cdnjs.cloudflare.com/ajax/libs/monaco-editor/0.34.1/min/vs' }
+        });
+        
         require(['vs/editor/editor.main'], function() {
-            // Editor HTML
             htmlEditor = monaco.editor.create(document.getElementById('htmlEditor'), {
-                value: `<!DOCTYPE html>
-<html lang="es">
-<head>
-    <meta charset="UTF-8">
-    <meta name="viewport" content="width=device-width, initial-scale=1.0">
-    <title>Mi Página</title>
-    <link rel="stylesheet" href="style.css">
-</head>
-<body>
-    <h1>¡Hola desde HTML!</h1>
-    <p>Este es un párrafo de ejemplo.</p>
-    <button>Haz clic</button>
-    <script src="script.js"></script>
-</body>
-</html>`,
+                value: '<!DOCTYPE html>\n<html>\n<head>\n    <title>Mi Página</title>\n</head>\n<body>\n    <h1>Hola Mundo</h1>\n    <p>Este es mi párrafo</p>\n    <button>Mi Botón</button>\n</body>\n</html>',
                 language: 'html',
                 theme: 'vs-dark',
                 automaticLayout: true,
                 minimap: { enabled: false },
-                autoClosingBrackets: 'always',
-                autoClosingTags: true,
-                autoIndent: 'full',
-                suggest: { showSnippets: true, insertMode: 'insert' }
+                autoClosingTags: 'always'
             });
 
-            // Asegurar cierre automático de etiquetas
-            monaco.languages.html.htmlDefaults.setOptions({
-                autoClosingTags: true,
-                formatOnType: true
-            });
-
-            // Editor CSS
             cssEditor = monaco.editor.create(document.getElementById('cssEditor'), {
-                value: `body { 
-    background-color: #f0f8ff; 
-    color: #333; 
-    font-family: 'Inter', sans-serif; 
-} 
-h1 { 
-    color: #2c3e50; 
-    font-size: 2.5em; 
-    margin-bottom: 10px; 
-} 
-p { 
-    color: #7f8c8d; 
-    font-size: 1.2em; 
-}
-button {
-    background-color: #4CAF50;
-    color: white;
-    padding: 10px 20px;
-    border: none;
-    border-radius: 5px;
-    cursor: pointer;
-}`,
+                value: 'body {\n    font-family: Arial, sans-serif;\n    background-color: #f0f0f0;\n    padding: 20px;\n}\n\nh1 {\n    color: #333;\n    text-align: center;\n}\n\nbutton {\n    background-color: #4CAF50;\n    color: white;\n    padding: 10px 20px;\n    border: none;\n    border-radius: 4px;\n    cursor: pointer;\n}',
                 language: 'css',
                 theme: 'vs-dark',
                 automaticLayout: true,
-                minimap: { enabled: false },
-                autoClosingBrackets: 'always',
-                autoIndent: 'full'
+                minimap: { enabled: false }
             });
 
-            // Editor JS
             jsEditor = monaco.editor.create(document.getElementById('jsEditor'), {
-                value: `document.addEventListener('DOMContentLoaded', () => {
-    console.log('¡Página lista!');
-    const button = document.querySelector('button');
-    if (button) {
-        button.addEventListener('click', () => {
-            alert('¡Botón clickeado!');
-        });
-    }
-});`,
+                value: 'document.addEventListener("DOMContentLoaded", function() {\n    var button = document.querySelector("button");\n    if (button) {\n        button.addEventListener("click", function() {\n            alert("¡Botón presionado!");\n        });\n    }\n});',
                 language: 'javascript',
                 theme: 'vs-dark',
                 automaticLayout: true,
-                minimap: { enabled: false },
-                autoClosingBrackets: 'always',
-                autoIndent: 'full'
+                minimap: { enabled: false }
             });
 
-            // Actualizar vista previa
-            htmlEditor.onDidChangeModelContent(updatePreview);
+            htmlEditor.onDidChangeModelContent(function() {
+                autoCloseHTMLTags();
+                updatePreview();
+            });
+            
             cssEditor.onDidChangeModelContent(updatePreview);
             jsEditor.onDidChangeModelContent(updatePreview);
+
             updatePreview();
-
-            // Inicializar redimensionadores
-            setupVerticalResizer('resizerHtmlCss', 'htmlEditor', 'cssEditor');
-            setupVerticalResizer('resizerCssJs', 'cssEditor', 'jsEditor');
-            setupDragHandles();
+            setupResizers();
         });
 
-        // Actualizar vista previa
-        function updatePreview() {
-            const html = htmlEditor.getValue();
-            const css = cssEditor.getValue();
-            const js = jsEditor.getValue();
-
-            const doc = document.getElementById('previewFrame').contentDocument || document.getElementById('previewFrame').contentWindow.document;
-            doc.open();
-            doc.write(`
-                <!DOCTYPE html>
-                <html>
-                <head>
-                    <meta charset="UTF-8">
-                    <meta name="viewport" content="width=device-width, initial-scale=1.0">
-                    <title>Vista Previa</title>
-                    <link href="https://fonts.googleapis.com/css2?family=Inter:wght@400;700&display=swap" rel="stylesheet">
-                    <style>${css}</style>
-                </head>
-                <body>
-                    ${html.replace(/<script[^>]*src="script\.js"[^>]*><\/script>/gi, '')}
-                    <script>${js}<\/script>
-                </body>
-                </html>
-            `);
-            doc.close();
-        }
-
-        // Descargar como carpeta .zip
-        async function downloadPage() {
-            const html = htmlEditor.getValue();
-            const css = cssEditor.getValue();
-            const js = jsEditor.getValue();
-
-            const finalHtml = html
-                .replace(/<style>[\s\S]*?<\/style>/i, '<link rel="stylesheet" href="style.css">')
-                .replace(/<script[^>]*><\/script>/i, '<script src="script.js"></script>');
-
-            const zip = new JSZip();
-            zip.file("index.html", finalHtml);
-            zip.file("style.css", css);
-            zip.file("script.js", js);
-
-            const content = await zip.generateAsync({ type: "blob" });
-            const url = URL.createObjectURL(content);
-            const a = document.createElement("a");
-            a.href = url;
-            a.download = "proyecto-web.zip";
-            document.body.appendChild(a);
-            a.click();
-            document.body.removeChild(a);
-            URL.revokeObjectURL(url);
-        }
-
-        /* --- Redimensionamiento Horizontal (Editor ↔ Preview) --- */
-        const resizerHorizontal = document.getElementById('resizerHorizontal');
-        const editorPanel = document.getElementById('editorPanel');
-        const previewPanel = document.getElementById('previewPanel');
-        const container = document.querySelector('.container');
-
-        let isResizingHorizontal = false;
-
-        resizerHorizontal.addEventListener('mousedown', (e) => {
-            isResizingHorizontal = true;
-            document.body.style.cursor = 'col-resize';
-            container.style.userSelect = 'none';
-        });
-
-        document.addEventListener('mousemove', (e) => {
-            if (!isResizingHorizontal) return;
-            const isColumn = window.matchMedia("(max-width: 768px)").matches;
-            const rect = container.getBoundingClientRect();
-
-            if (isColumn) {
-                const newHeight = e.clientY - rect.top;
-                const h = (newHeight / rect.height) * 100;
-                if (h > 10 && h < 90) {
-                    editorPanel.style.height = `${h}%`;
-                    previewPanel.style.height = `${100 - h}%`;
+        function autoCloseHTMLTags() {
+            try {
+                if (!htmlEditor) return;
+                
+                var model = htmlEditor.getModel();
+                if (!model) return;
+                
+                var position = htmlEditor.getPosition();
+                if (!position) return;
+                
+                var lineContent = model.getLineContent(position.lineNumber);
+                var beforeCursor = lineContent.substring(0, position.column - 1);
+                
+                var tags = ['p', 'button', 'div', 'span', 'h1', 'h2', 'h3', 'a', 'strong', 'em', 'li', 'ul', 'ol'];
+                
+                for (var i = 0; i < tags.length; i++) {
+                    var tag = tags[i];
+                    var openTag = '<' + tag + '>';
+                    var closeTag = '</' + tag + '>';
+                    
+                    if (beforeCursor.endsWith(openTag)) {
+                        var afterCursor = lineContent.substring(position.column - 1);
+                        
+                        if (afterCursor.indexOf(closeTag) === -1) {
+                            var edit = {
+                                range: {
+                                    startLineNumber: position.lineNumber,
+                                    startColumn: position.column,
+                                    endLineNumber: position.lineNumber,
+                                    endColumn: position.column
+                                },
+                                text: closeTag
+                            };
+                            
+                            model.pushEditOperations([], [edit], function() { return null; });
+                            htmlEditor.setPosition({
+                                lineNumber: position.lineNumber,
+                                column: position.column
+                            });
+                        }
+                        break;
+                    }
                 }
-            } else {
-                const newWidth = e.clientX - rect.left;
-                const w = (newWidth / rect.width) * 100;
-                if (w > 10 && w < 90) {
-                    editorPanel.style.width = `${w}%`;
-                    previewPanel.style.width = `${100 - w}%`;
+            } catch (error) {
+                console.log('Error en autocompletado');
+            }
+        }
+
+        function updatePreview() {
+            try {
+                if (!htmlEditor || !cssEditor || !jsEditor) return;
+                
+                var html = htmlEditor.getValue();
+                var css = cssEditor.getValue();
+                var js = jsEditor.getValue();
+                
+                var preview = document.getElementById('previewFrame');
+                if (!preview) return;
+                
+                var doc = preview.contentDocument || preview.contentWindow.document;
+                
+                var content = '<!DOCTYPE html><html><head><meta charset="UTF-8"><style>' + css + '</style></head><body>' + html + '<script>' + js + '</script></body></html>';
+                
+                doc.open();
+                doc.write(content);
+                doc.close();
+            } catch (error) {
+                console.log('Error en vista previa');
+            }
+        }
+
+        function setupResizers() {
+            var resizerHorizontal = document.getElementById('resizerHorizontal');
+            var editorPanel = document.getElementById('editorPanel');
+            var isResizing = false;
+
+            resizerHorizontal.addEventListener('mousedown', function(e) {
+                isResizing = true;
+                e.preventDefault();
+            });
+
+            document.addEventListener('mousemove', function(e) {
+                if (!isResizing) return;
+
+                var containerWidth = document.querySelector('.container').offsetWidth;
+                var newWidth = (e.clientX / containerWidth) * 100;
+                
+                if (newWidth > 20 && newWidth < 80) {
+                    editorPanel.style.flex = '0 0 ' + newWidth + '%';
+                }
+            });
+
+            document.addEventListener('mouseup', function() {
+                if (!isResizing) return;
+                isResizing = false;
+                
+                setTimeout(function() {
                     if (htmlEditor) htmlEditor.layout();
                     if (cssEditor) cssEditor.layout();
                     if (jsEditor) jsEditor.layout();
-                }
-            }
-        });
-
-        document.addEventListener('mouseup', () => {
-            if (isResizingHorizontal) {
-                isResizingHorizontal = false;
-                document.body.style.cursor = 'default';
-                container.style.userSelect = 'auto';
-            }
-        });
-
-        /* --- Redimensionamiento Vertical (entre editores) --- */
-        function setupVerticalResizer(resizerId, topId, bottomId) {
-            const resizer = document.getElementById(resizerId);
-            const top = document.getElementById(topId);
-            const bottom = document.getElementById(bottomId);
-            let isResizing = false;
-            let startY, initialTop, initialBottom;
-
-            resizer.addEventListener('mousedown', (e) => {
-                isResizing = true;
-                e.preventDefault();
-                document.body.style.cursor = 'row-resize';
-                startY = e.clientY;
-                initialTop = top.offsetHeight;
-                initialBottom = bottom.offsetHeight;
-                top.style.height = `${initialTop}px`;
-                bottom.style.height = `${initialBottom}px`;
-                top.style.flexGrow = '0';
-                bottom.style.flexGrow = '0';
+                }, 100);
             });
 
-            document.addEventListener('mousemove', (e) => {
-                if (!isResizing) return;
-                const dy = e.clientY - startY;
-                const newTop = initialTop + dy;
-                const newBottom = initialBottom - dy;
-                const minHeight = 50;
+            setupVerticalResizer('resizerHtmlCss', 'htmlEditorWrapper', 'cssEditorWrapper');
+            setupVerticalResizer('resizerCssJs', 'cssEditorWrapper', 'jsEditorWrapper');
+        }
 
-                if (newTop >= minHeight && newBottom >= minHeight) {
-                    top.style.height = `${newTop}px`;
-                    bottom.style.height = `${newBottom}px`;
+        function setupVerticalResizer(resizerId, topId, bottomId) {
+            var resizer = document.getElementById(resizerId);
+            var topElement = document.getElementById(topId);
+            var bottomElement = document.getElementById(bottomId);
+            
+            var isResizing = false;
+            var startY = 0;
+            var startTopHeight = 0;
+            var startBottomHeight = 0;
+
+            resizer.addEventListener('mousedown', function(e) {
+                isResizing = true;
+                startY = e.clientY;
+                startTopHeight = topElement.offsetHeight;
+                startBottomHeight = bottomElement.offsetHeight;
+                e.preventDefault();
+            });
+
+            document.addEventListener('mousemove', function(e) {
+                if (!isResizing) return;
+
+                var deltaY = e.clientY - startY;
+                var newTopHeight = startTopHeight + deltaY;
+                var newBottomHeight = startBottomHeight - deltaY;
+                var minHeight = 100;
+
+                if (newTopHeight >= minHeight && newBottomHeight >= minHeight) {
+                    topElement.style.flex = '0 0 ' + newTopHeight + 'px';
+                    bottomElement.style.flex = '0 0 ' + newBottomHeight + 'px';
+                }
+            });
+
+            document.addEventListener('mouseup', function() {
+                if (!isResizing) return;
+                isResizing = false;
+                
+                setTimeout(function() {
+                    if (htmlEditor) htmlEditor.layout();
+                    if (cssEditor) cssEditor.layout();
+                    if (jsEditor) jsEditor.layout();
+                }, 100);
+            });
+        }
+
+        function downloadFiles() {
+            try {
+                if (!htmlEditor || !cssEditor || !jsEditor) {
+                    alert('Error: Los editores no están listos');
+                    return;
                 }
 
+                var html = htmlEditor.getValue();
+                var css = cssEditor.getValue();
+                var js = jsEditor.getValue();
+
+                var fullHTML = '<!DOCTYPE html>\n<html lang="es">\n<head>\n    <meta charset="UTF-8">\n    <meta name="viewport" content="width=device-width, initial-scale=1.0">\n    <title>Mi Página Web</title>\n    <style>\n' + css + '\n    </style>\n</head>\n<body>\n' + html + '\n    <script>\n' + js + '\n    </script>\n</body>\n</html>';
+
+                var blob = new Blob([fullHTML], { type: 'text/html' });
+                var url = URL.createObjectURL(blob);
+                var a = document.createElement('a');
+                a.href = url;
+                a.download = 'mi-pagina-web.html';
+                document.body.appendChild(a);
+                a.click();
+                document.body.removeChild(a);
+                URL.revokeObjectURL(url);
+            } catch (error) {
+                alert('Error al descargar el archivo');
+            }
+        }
+
+        window.addEventListener('resize', function() {
+            setTimeout(function() {
                 if (htmlEditor) htmlEditor.layout();
                 if (cssEditor) cssEditor.layout();
                 if (jsEditor) jsEditor.layout();
-            });
-
-            document.addEventListener('mouseup', () => {
-                if (isResizing) {
-                    isResizing = false;
-                    document.body.style.cursor = 'default';
-                    updateEditorFlexGrow();
-                }
-            });
-        }
-
-        /* --- Arrastre desde el borde inferior de cada editor --- */
-        function setupDragHandles() {
-            document.querySelectorAll('.drag-handle').forEach(handle => {
-                const targetId = handle.getAttribute('data-target');
-                const editorContainer = document.getElementById(targetId);
-                const wrapper = handle.parentElement;
-                const nextWrapper = wrapper?.nextElementSibling?.classList.contains('editor-resizable') ? wrapper.nextElementSibling : null;
-                if (!nextWrapper) return;
-
-                const nextContainer = nextWrapper.querySelector('.monaco-editor-container');
-
-                handle.addEventListener('mousedown', (e) => {
-                    e.preventDefault();
-                    let isDragging = true;
-                    const startY = e.clientY;
-                    const initialTop = editorContainer.offsetHeight;
-                    const initialBottom = nextContainer.offsetHeight;
-
-                    editorContainer.style.height = `${initialTop}px`;
-                    nextContainer.style.height = `${initialBottom}px`;
-                    editorContainer.style.flexGrow = '0';
-                    nextContainer.style.flexGrow = '0';
-                    document.body.style.cursor = 'row-resize';
-
-                    const move = (e) => {
-                        if (!isDragging) return;
-                        const dy = e.clientY - startY;
-                        const newTop = initialTop + dy;
-                        const newBottom = initialBottom - dy;
-                        const minHeight = 50;
-
-                        if (newTop >= minHeight && newBottom >= minHeight) {
-                            editorContainer.style.height = `${newTop}px`;
-                            nextContainer.style.height = `${newBottom}px`;
-                        }
-
-                        if (htmlEditor) htmlEditor.layout();
-                        if (cssEditor) cssEditor.layout();
-                        if (jsEditor) jsEditor.layout();
-                    };
-
-                    const up = () => {
-                        isDragging = false;
-                        document.body.style.cursor = 'default';
-                        document.removeEventListener('mousemove', move);
-                        document.removeEventListener('mouseup', up);
-                        updateEditorFlexGrow();
-                    };
-
-                    document.addEventListener('mousemove', move);
-                    document.addEventListener('mouseup', up);
-                });
-            });
-        }
-
-        /* --- Ajustar proporciones al redimensionar --- */
-        function updateEditorFlexGrow() {
-            const total = editorPanel.clientHeight;
-            let used = 0;
-            const elements = [
-                document.querySelector('.editor-section h2'),
-                ...document.querySelectorAll('label'),
-                document.getElementById('downloadBtn')
-            ];
-            elements.forEach(el => {
-                if (el) used += el.offsetHeight;
-            });
-            used += document.querySelectorAll('.resizer-vertical').length * 6;
-
-            const available = total - used;
-            if (available <= 0) return;
-
-            const containers = ['htmlEditor', 'cssEditor', 'jsEditor'].map(id => document.getElementById(id));
-            const heights = containers.map(c => c.offsetHeight);
-            const sum = heights.reduce((a, b) => a + b, 0);
-            if (sum <= 0) return;
-
-            containers.forEach((c, i) => {
-                c.style.flexGrow = heights[i] / sum;
-                c.style.height = '';
-            });
-
-            [htmlEditor, cssEditor, jsEditor].forEach(e => e?.layout());
-        }
-
-        window.addEventListener('resize', updateEditorFlexGrow);
-
-        // Ocultar descripción después de 10 segundos
-        document.addEventListener('DOMContentLoaded', () => {
-            setTimeout(() => {
-                const desc = document.getElementById('description-text');
-                if (desc) {
-                    desc.style.opacity = '0';
-                    desc.addEventListener('transitionend', () => desc.style.display = 'none', { once: true });
-                }
-            }, 10000);
+            }, 100);
         });
     </script>
 </body>
