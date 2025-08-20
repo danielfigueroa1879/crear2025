@@ -17,17 +17,17 @@
         h1 {
             text-align: center;
             color: #ffffff;
-            padding: 5px 0; /* Aún menos padding vertical */
-            margin-bottom: 0px; /* Eliminar margen inferior */
-            font-size: 1.8em; /* Tamaño de fuente más pequeño */
-            line-height: 1.1; /* Altura de línea más ajustada */
+            padding: 5px 0;
+            margin-bottom: 0px;
+            font-size: 1.8em;
+            line-height: 1.1;
         }
-        #description-text { /* ID para el párrafo descriptivo */
+        #description-text {
             text-align: center;
-            margin-bottom: 5px; /* Menos margen inferior para la descripción */
+            margin-bottom: 5px;
             padding: 0 20px;
-            font-size: 0.8em; /* Texto de descripción aún más pequeño */
-            transition: opacity 0.5s ease-out; /* Transición para que desaparezca suavemente */
+            font-size: 0.8em;
+            transition: opacity 0.5s ease-out;
         }
         .container {
             flex: 1;
@@ -39,16 +39,16 @@
             overflow: hidden;
             background-color: #2d2d2d;
         }
-        .editor-section { /* Contenedor para los editores y sus redimensionadores */
+        .editor-section {
             flex-grow: 1;
             padding: 20px;
             box-sizing: border-box;
             min-width: 200px;
             display: flex;
-            flex-direction: column; /* Apilar los editores verticalmente */
+            flex-direction: column;
             background-color: #2d2d2d;
             position: relative;
-            gap: 15px; /* Espaciado unificado con flexbox gap */
+            gap: 15px;
         }
         .preview {
             flex-grow: 1;
@@ -56,30 +56,30 @@
             color: #1e1e1e;
             display: flex;
             flex-direction: column;
-            padding: 20px; /* Añadir padding a la vista previa */
+            padding: 20px;
             box-sizing: border-box;
-            min-width: 200px; /* Ancho mínimo para la vista previa */
+            min-width: 200px;
         }
         h2 {
             color: #ffffff;
             margin-top: 0;
-            margin-bottom: 15px; /* Mantener margen para H2 */
+            margin-bottom: 15px;
         }
         .preview h2 {
             color: #1e1e1e;
         }
         .monaco-editor-container {
-            flex-basis: 0; /* Importante para el comportamiento de flex-grow */
-            flex-grow: 1; /* Distribución inicial equitativa */
+            flex-basis: 150px; /* Altura base mínima */
+            flex-grow: 1;
             border: 1px solid #555;
             border-radius: 4px;
             overflow: hidden;
-            min-height: 50px; /* Altura mínima para cada editor */
+            min-height: 100px;
         }
         label {
             color: #ffffff;
             font-weight: bold;
-            margin-bottom: 5px; /* Aún se necesita margen para las etiquetas */
+            margin-bottom: 5px;
             display: block;
         }
         button {
@@ -93,7 +93,8 @@
             cursor: pointer;
             font-size: 16px;
             transition: background-color 0.3s ease;
-            margin-top: auto; /* Empuja el botón hacia abajo */
+            margin-top: auto;
+            flex-shrink: 0;
         }
         button:hover {
             background-color: #45a049;
@@ -105,7 +106,6 @@
         #downloadBtn:hover {
             background-color: #007B9A;
         }
-        /* Resizer Horizontal (entre editor y preview) */
         .resizer-horizontal {
             width: 8px;
             background-color: #444;
@@ -116,16 +116,26 @@
         .resizer-horizontal:hover {
             background-color: #008CBA;
         }
-        /* Resizer Vertical (entre los editores de código) */
         .resizer-vertical {
             height: 8px;
             background-color: #444;
             cursor: ns-resize;
             flex-shrink: 0;
             transition: background-color 0.2s ease;
+            position: relative;
         }
         .resizer-vertical:hover {
             background-color: #008CBA;
+        }
+        .resizer-vertical::after {
+            content: '⋯';
+            position: absolute;
+            top: 50%;
+            left: 50%;
+            transform: translate(-50%, -50%);
+            color: #888;
+            font-size: 12px;
+            letter-spacing: 2px;
         }
         iframe {
             width: 100%;
@@ -192,12 +202,10 @@
 
     <script src="https://cdnjs.cloudflare.com/ajax/libs/monaco-editor/0.34.1/min/vs/loader.min.js"></script>
     <script>
-        let htmlEditor, cssEditor, jsEditor; // Variables para almacenar las instancias de los editores
+        let htmlEditor, cssEditor, jsEditor;
 
-        // Función para inicializar Monaco Editor
         require.config({ paths: { 'vs': 'https://cdnjs.cloudflare.com/ajax/libs/monaco-editor/0.34.1/min/vs' }});
         require(['vs/editor/editor.main'], function() {
-            // Inicializar editor HTML
             htmlEditor = monaco.editor.create(document.getElementById('htmlEditor'), {
                 value: `<!DOCTYPE html>
 <html lang="es">
@@ -213,39 +221,47 @@
 </body>
 </html>`,
                 language: 'html',
-                theme: 'vs-dark', // Tema oscuro
-                automaticLayout: true, // Ajustar automáticamente el tamaño
-                minimap: { enabled: false }, // Desactivar minimap
-                // Opciones para autocompletado y auto-cierre (generalmente activas por defecto)
+                theme: 'vs-dark',
+                automaticLayout: true,
+                minimap: { enabled: false },
                 autoClosingBrackets: 'always',
                 autoClosingQuotes: 'always',
                 autoClosingTags: true,
                 autoIndent: 'full'
             });
 
-            // Inicializar editor CSS
             cssEditor = monaco.editor.create(document.getElementById('cssEditor'), {
                 value: `body { 
     background-color: #f0f8ff; 
     color: #333; 
     font-family: 'Inter', sans-serif; 
+    padding: 20px;
 } 
 h1 { 
     color: #2c3e50; 
     font-size: 2.5em; 
     margin-bottom: 10px; 
+    text-align: center;
 } 
 p { 
     color: #7f8c8d; 
     font-size: 1.2em; 
+    text-align: center;
 }
 button {
     background-color: #4CAF50;
     color: white;
-    padding: 10px 20px;
+    padding: 15px 30px;
     border: none;
-    border-radius: 5px;
+    border-radius: 8px;
     cursor: pointer;
+    font-size: 16px;
+    display: block;
+    margin: 20px auto;
+    transition: background-color 0.3s ease;
+}
+button:hover {
+    background-color: #45a049;
 }`,
                 language: 'css',
                 theme: 'vs-dark',
@@ -256,14 +272,53 @@ button {
                 autoIndent: 'full'
             });
 
-            // Inicializar editor JavaScript
             jsEditor = monaco.editor.create(document.getElementById('jsEditor'), {
                 value: `document.addEventListener('DOMContentLoaded', () => {
     console.log('¡Página creada con IA y lista!');
+    
     const button = document.querySelector('button');
     if (button) {
         button.addEventListener('click', () => {
-            alert('¡Has hecho clic en el botón!'); // Considera usar un modal personalizado en lugar de alert()
+            // Crear un modal personalizado en lugar de alert
+            const modal = document.createElement('div');
+            modal.style.cssText = \`
+                position: fixed;
+                top: 0;
+                left: 0;
+                width: 100%;
+                height: 100%;
+                background: rgba(0,0,0,0.5);
+                display: flex;
+                justify-content: center;
+                align-items: center;
+                z-index: 1000;
+            \`;
+            
+            const content = document.createElement('div');
+            content.style.cssText = \`
+                background: white;
+                padding: 30px;
+                border-radius: 10px;
+                text-align: center;
+                box-shadow: 0 4px 20px rgba(0,0,0,0.3);
+            \`;
+            
+            content.innerHTML = \`
+                <h3 style="margin-top: 0; color: #2c3e50;">¡Excelente!</h3>
+                <p style="color: #7f8c8d;">Has hecho clic en el botón</p>
+                <button onclick="this.closest('[style*=fixed]').remove()" 
+                        style="background: #4CAF50; color: white; border: none; 
+                               padding: 10px 20px; border-radius: 5px; cursor: pointer;">
+                    Cerrar
+                </button>
+            \`;
+            
+            modal.appendChild(content);
+            document.body.appendChild(modal);
+            
+            modal.addEventListener('click', (e) => {
+                if (e.target === modal) modal.remove();
+            });
         });
     }
 });`,
@@ -276,16 +331,187 @@ button {
                 autoIndent: 'full'
             });
 
-            // Escuchar cambios en los editores y actualizar la vista previa
+            // Registrar un proveedor de autocompletado personalizado para HTML
+            monaco.languages.registerCompletionItemProvider('html', {
+                provideCompletionItems: function(model, position) {
+                    const word = model.getWordUntilPosition(position);
+                    const range = {
+                        startLineNumber: position.lineNumber,
+                        endLineNumber: position.lineNumber,
+                        startColumn: word.startColumn,
+                        endColumn: word.endColumn
+                    };
+
+                    const suggestions = [
+                        {
+                            label: 'p',
+                            kind: monaco.languages.CompletionItemKind.Snippet,
+                            insertText: '<p>${1}</p>',
+                            insertTextRules: monaco.languages.CompletionItemInsertTextRule.InsertAsSnippet,
+                            documentation: 'Párrafo',
+                            range: range
+                        },
+                        {
+                            label: 'button',
+                            kind: monaco.languages.CompletionItemKind.Snippet,
+                            insertText: '<button>${1}</button>',
+                            insertTextRules: monaco.languages.CompletionItemInsertTextRule.InsertAsSnippet,
+                            documentation: 'Botón',
+                            range: range
+                        },
+                        {
+                            label: 'div',
+                            kind: monaco.languages.CompletionItemKind.Snippet,
+                            insertText: '<div>${1}</div>',
+                            insertTextRules: monaco.languages.CompletionItemInsertTextRule.InsertAsSnippet,
+                            documentation: 'División',
+                            range: range
+                        },
+                        {
+                            label: 'span',
+                            kind: monaco.languages.CompletionItemKind.Snippet,
+                            insertText: '<span>${1}</span>',
+                            insertTextRules: monaco.languages.CompletionItemInsertTextRule.InsertAsSnippet,
+                            documentation: 'Span',
+                            range: range
+                        },
+                        {
+                            label: 'h1',
+                            kind: monaco.languages.CompletionItemKind.Snippet,
+                            insertText: '<h1>${1}</h1>',
+                            insertTextRules: monaco.languages.CompletionItemInsertTextRule.InsertAsSnippet,
+                            documentation: 'Encabezado 1',
+                            range: range
+                        },
+                        {
+                            label: 'h2',
+                            kind: monaco.languages.CompletionItemKind.Snippet,
+                            insertText: '<h2>${1}</h2>',
+                            insertTextRules: monaco.languages.CompletionItemInsertTextRule.InsertAsSnippet,
+                            documentation: 'Encabezado 2',
+                            range: range
+                        },
+                        {
+                            label: 'h3',
+                            kind: monaco.languages.CompletionItemKind.Snippet,
+                            insertText: '<h3>${1}</h3>',
+                            insertTextRules: monaco.languages.CompletionItemInsertTextRule.InsertAsSnippet,
+                            documentation: 'Encabezado 3',
+                            range: range
+                        },
+                        {
+                            label: 'a',
+                            kind: monaco.languages.CompletionItemKind.Snippet,
+                            insertText: '<a href="${1}">${2}</a>',
+                            insertTextRules: monaco.languages.CompletionItemInsertTextRule.InsertAsSnippet,
+                            documentation: 'Enlace',
+                            range: range
+                        },
+                        {
+                            label: 'img',
+                            kind: monaco.languages.CompletionItemKind.Snippet,
+                            insertText: '<img src="${1}" alt="${2}">',
+                            insertTextRules: monaco.languages.CompletionItemInsertTextRule.InsertAsSnippet,
+                            documentation: 'Imagen',
+                            range: range
+                        },
+                        {
+                            label: 'ul',
+                            kind: monaco.languages.CompletionItemKind.Snippet,
+                            insertText: '<ul>\n\t<li>${1}</li>\n</ul>',
+                            insertTextRules: monaco.languages.CompletionItemInsertTextRule.InsertAsSnippet,
+                            documentation: 'Lista no ordenada',
+                            range: range
+                        },
+                        {
+                            label: 'ol',
+                            kind: monaco.languages.CompletionItemKind.Snippet,
+                            insertText: '<ol>\n\t<li>${1}</li>\n</ol>',
+                            insertTextRules: monaco.languages.CompletionItemInsertTextRule.InsertAsSnippet,
+                            documentation: 'Lista ordenada',
+                            range: range
+                        },
+                        {
+                            label: 'li',
+                            kind: monaco.languages.CompletionItemKind.Snippet,
+                            insertText: '<li>${1}</li>',
+                            insertTextRules: monaco.languages.CompletionItemInsertTextRule.InsertAsSnippet,
+                            documentation: 'Elemento de lista',
+                            range: range
+                        },
+                        {
+                            label: 'form',
+                            kind: monaco.languages.CompletionItemKind.Snippet,
+                            insertText: '<form action="${1}" method="${2}">\n\t${3}\n</form>',
+                            insertTextRules: monaco.languages.CompletionItemInsertTextRule.InsertAsSnippet,
+                            documentation: 'Formulario',
+                            range: range
+                        },
+                        {
+                            label: 'input',
+                            kind: monaco.languages.CompletionItemKind.Snippet,
+                            insertText: '<input type="${1}" name="${2}" value="${3}">',
+                            insertTextRules: monaco.languages.CompletionItemInsertTextRule.InsertAsSnippet,
+                            documentation: 'Campo de entrada',
+                            range: range
+                        },
+                        {
+                            label: 'textarea',
+                            kind: monaco.languages.CompletionItemKind.Snippet,
+                            insertText: '<textarea name="${1}" rows="${2}" cols="${3}">${4}</textarea>',
+                            insertTextRules: monaco.languages.CompletionItemInsertTextRule.InsertAsSnippet,
+                            documentation: 'Área de texto',
+                            range: range
+                        },
+                        {
+                            label: 'select',
+                            kind: monaco.languages.CompletionItemKind.Snippet,
+                            insertText: '<select name="${1}">\n\t<option value="${2}">${3}</option>\n</select>',
+                            insertTextRules: monaco.languages.CompletionItemInsertTextRule.InsertAsSnippet,
+                            documentation: 'Lista desplegable',
+                            range: range
+                        },
+                        {
+                            label: 'table',
+                            kind: monaco.languages.CompletionItemKind.Snippet,
+                            insertText: '<table>\n\t<tr>\n\t\t<td>${1}</td>\n\t</tr>\n</table>',
+                            insertTextRules: monaco.languages.CompletionItemInsertTextRule.InsertAsSnippet,
+                            documentation: 'Tabla',
+                            range: range
+                        }
+                    ];
+
+                    return { suggestions: suggestions };
+                }
+            });
+
+            // Configurar opciones adicionales para el cierre automático de etiquetas
+            monaco.languages.setLanguageConfiguration('html', {
+                autoClosingPairs: [
+                    { open: '<', close: '>' },
+                    { open: '"', close: '"' },
+                    { open: "'", close: "'" },
+                    { open: '(', close: ')' },
+                    { open: '[', close: ']' },
+                    { open: '{', close: '}' }
+                ],
+                surroundingPairs: [
+                    { open: '<', close: '>' },
+                    { open: '"', close: '"' },
+                    { open: "'", close: "'" },
+                    { open: '(', close: ')' },
+                    { open: '[', close: ']' },
+                    { open: '{', close: '}' }
+                ]
+            });
+
             htmlEditor.onDidChangeModelContent(updatePreview);
             cssEditor.onDidChangeModelContent(updatePreview);
             jsEditor.onDidChangeModelContent(updatePreview);
 
-            // Inicializar la vista previa al cargar los editores
             updatePreview();
         });
 
-        // Función para actualizar la vista previa
         function updatePreview() {
             const html = htmlEditor ? htmlEditor.getValue() : '';
             const css = cssEditor ? cssEditor.getValue() : '';
@@ -314,28 +540,25 @@ button {
             doc.close();
         }
 
-        // Función para descargar la página completa
         function downloadPage() {
             const html = htmlEditor ? htmlEditor.getValue() : '';
             const css = cssEditor ? cssEditor.getValue() : '';
             const js = jsEditor ? jsEditor.getValue() : '';
             
-            const fullPage = `
-                <!DOCTYPE html>
-                <html lang="es">
-                <head>
-                    <meta charset="UTF-8">
-                    <meta name="viewport" content="width=device-width, initial-scale=1.0">
-                    <title>Página Web Generada</title>
-                    <link href="https://fonts.googleapis.com/css2?family=Inter:wght@400;700&display=swap" rel="stylesheet">
-                    <style>${css}</style>
-                </head>
-                <body>
-                    ${html}
-                    <script>${js}<\/script>
-                </body>
-                </html>
-            `;
+            const fullPage = `<!DOCTYPE html>
+<html lang="es">
+<head>
+    <meta charset="UTF-8">
+    <meta name="viewport" content="width=device-width, initial-scale=1.0">
+    <title>Página Web Generada</title>
+    <link href="https://fonts.googleapis.com/css2?family=Inter:wght@400;700&display=swap" rel="stylesheet">
+    <style>${css}</style>
+</head>
+<body>
+    ${html}
+    <script>${js}<\/script>
+</body>
+</html>`;
             
             const blob = new Blob([fullPage], { type: 'text/html' });
             const url = URL.createObjectURL(blob);
@@ -348,7 +571,7 @@ button {
             URL.revokeObjectURL(url);
         }
 
-        /* --- Lógica de Redimensionamiento Horizontal (Editor vs. Preview) --- */
+        // Redimensionamiento Horizontal (Editor vs. Preview)
         const resizerHorizontal = document.getElementById('resizerHorizontal');
         const editorPanel = document.getElementById('editorPanel');
         const previewPanel = document.getElementById('previewPanel');
@@ -360,7 +583,7 @@ button {
             isResizingHorizontal = true;
             document.body.style.cursor = 'ew-resize';
             container.style.userSelect = 'none';
-            container.style.pointerEvents = 'none'; // Prevenir interacción con los hijos durante el arrastre
+            e.preventDefault();
         });
 
         document.addEventListener('mousemove', (e) => {
@@ -369,7 +592,6 @@ button {
             const isColumnLayout = window.matchMedia("(max-width: 768px)").matches;
 
             if (isColumnLayout) {
-                // Modo columna (móvil): el resizer horizontal actúa como vertical
                 const containerRect = container.getBoundingClientRect();
                 const newHeight = e.clientY - containerRect.top;
                 const totalHeight = containerRect.height;
@@ -380,16 +602,15 @@ button {
                     previewPanel.style.height = `${100 - editorHeightPercentage}%`;
                 }
             } else {
-                // Modo fila (escritorio): redimensionamiento horizontal
                 const containerRect = container.getBoundingClientRect();
                 const newWidth = e.clientX - containerRect.left;
                 const totalWidth = containerRect.width;
                 const editorWidthPercentage = (newWidth / totalWidth) * 100;
                 
-                if (editorWidthPercentage > 10 && editorWidthPercentage < 90) {
-                    editorPanel.style.width = `${editorWidthPercentage}%`;
-                    previewPanel.style.width = `${100 - editorWidthPercentage}%`;
-                    // Refrescar layout de Monaco para que se adapte al nuevo tamaño
+                if (editorWidthPercentage > 15 && editorWidthPercentage < 85) {
+                    editorPanel.style.flexBasis = `${editorWidthPercentage}%`;
+                    previewPanel.style.flexBasis = `${100 - editorWidthPercentage}%`;
+                    
                     if (htmlEditor) htmlEditor.layout();
                     if (cssEditor) cssEditor.layout();
                     if (jsEditor) jsEditor.layout();
@@ -402,190 +623,107 @@ button {
             isResizingHorizontal = false;
             document.body.style.cursor = 'default';
             container.style.userSelect = 'auto';
-            container.style.pointerEvents = 'auto';
         });
 
-        /* --- Lógica de Redimensionamiento Vertical (entre editores) --- */
+        // Redimensionamiento Vertical Mejorado (entre editores)
         function setupVerticalResizer(resizerId, topEditorId, bottomEditorId) {
             const resizer = document.getElementById(resizerId);
-            const topEditorContainer = document.getElementById(topEditorId);
-            const bottomEditorContainer = document.getElementById(bottomEditorId);
+            const topEditor = document.getElementById(topEditorId);
+            const bottomEditor = document.getElementById(bottomEditorId);
 
             let isResizingVertical = false;
-            let startY;
-            let initialTopHeightPx;
-            let initialBottomHeightPx;
-            let totalCombinedHeightPx; // La suma de las alturas de los dos editores durante un arrastre específico
+            let startY = 0;
+            let startTopHeight = 0;
+            let startBottomHeight = 0;
 
             resizer.addEventListener('mousedown', (e) => {
                 isResizingVertical = true;
-                e.preventDefault(); // Prevenir selección de texto
-                document.body.style.cursor = 'ns-resize'; // Cursor de redimensionamiento norte-sur
                 startY = e.clientY;
+                
+                // Obtener alturas actuales
+                const topRect = topEditor.getBoundingClientRect();
+                const bottomRect = bottomEditor.getBoundingClientRect();
+                startTopHeight = topRect.height;
+                startBottomHeight = bottomRect.height;
 
-                // Capturar las alturas iniciales en píxeles y el total combinado
-                initialTopHeightPx = topEditorContainer.offsetHeight;
-                initialBottomHeightPx = bottomEditorContainer.offsetHeight;
-                totalCombinedHeightPx = initialTopHeightPx + initialBottomHeightPx;
-
-                // Establecer explícitamente las alturas en píxeles para el arrastre suave
-                topEditorContainer.style.height = `${initialTopHeightPx}px`;
-                bottomEditorContainer.style.height = `${initialBottomHeightPx}px`;
-                // Deshabilitar flex-grow temporalmente durante el arrastre
-                topEditorContainer.style.flexGrow = '0';
-                bottomEditorContainer.style.flexGrow = '0';
+                document.body.style.cursor = 'ns-resize';
+                document.body.style.userSelect = 'none';
+                e.preventDefault();
             });
 
             document.addEventListener('mousemove', (e) => {
                 if (!isResizingVertical) return;
 
-                const dy = e.clientY - startY; // Cambio en la posición Y
-
-                let newHeightTopCandidate = initialTopHeightPx + dy;
-                let newHeightBottomCandidate = initialBottomHeightPx - dy;
-
-                const minHeightPx = 50;
-
-                // Aplicar restricciones de altura mínima y asegurar que la suma se mantenga
-                let finalTopHeight = newHeightTopCandidate;
-                let finalBottomHeight = newHeightBottomCandidate;
-
-                // Asegurarse de que el editor superior respete su altura mínima
-                if (finalTopHeight < minHeightPx) {
-                    finalTopHeight = minHeightPx;
-                    finalBottomHeight = totalCombinedHeightPx - finalTopHeight; // Ajustar el inferior para mantener el total
-                }
-                // Asegurarse de que el editor inferior respete su altura mínima
-                if (finalBottomHeight < minHeightPx) {
-                    finalBottomHeight = minHeightPx;
-                    finalTopHeight = totalCombinedHeightPx - finalBottomHeight; // Ajustar el superior para mantener el total
-                }
-
-                // Aplicar un ajuste final si, después de las restricciones, la suma de alturas no es la original
-                // Esto puede ocurrir en casos extremos o si la suma total es menor que 2 * minHeightPx
-                const currentSum = finalTopHeight + finalBottomHeight;
-                if (currentSum !== totalCombinedHeightPx) {
-                    const difference = totalCombinedHeightPx - currentSum;
-                    // Redistribuir la diferencia. Priorizar el crecimiento del que no está en su mínimo.
-                    if (finalTopHeight > minHeightPx && finalBottomHeight === minHeightPx) {
-                        finalTopHeight += difference;
-                    } else if (finalBottomHeight > minHeightPx && finalTopHeight === minHeightPx) {
-                        finalBottomHeight += difference;
-                    } else { // Ambos están en el mínimo o pueden crecer. Distribuir equitativamente.
-                        finalTopHeight += difference / 2;
-                        finalBottomHeight += difference / 2;
-                    }
-                }
+                const deltaY = e.clientY - startY;
+                const minHeight = 80;
                 
-                // Aplicar las nuevas alturas en píxeles
-                topEditorContainer.style.height = `${finalTopHeight}px`;
-                bottomEditorContainer.style.height = `${finalBottomHeight}px`;
+                let newTopHeight = startTopHeight + deltaY;
+                let newBottomHeight = startBottomHeight - deltaY;
 
-                // Forzar a los editores de Monaco a redibujarse
-                if (htmlEditor) htmlEditor.layout();
-                if (cssEditor) cssEditor.layout();
-                if (jsEditor) jsEditor.layout();
+                // Aplicar límites mínimos
+                if (newTopHeight < minHeight) {
+                    newTopHeight = minHeight;
+                    newBottomHeight = startTopHeight + startBottomHeight - minHeight;
+                }
+                if (newBottomHeight < minHeight) {
+                    newBottomHeight = minHeight;
+                    newTopHeight = startTopHeight + startBottomHeight - minHeight;
+                }
+
+                // Aplicar las nuevas alturas
+                topEditor.style.height = `${newTopHeight}px`;
+                topEditor.style.flexGrow = '0';
+                topEditor.style.flexShrink = '0';
+                
+                bottomEditor.style.height = `${newBottomHeight}px`;
+                bottomEditor.style.flexGrow = '0';
+                bottomEditor.style.flexShrink = '0';
+
+                // Actualizar layout de Monaco
+                if (htmlEditor && topEditorId === 'htmlEditor') htmlEditor.layout();
+                if (cssEditor && (topEditorId === 'cssEditor' || bottomEditorId === 'cssEditor')) cssEditor.layout();
+                if (jsEditor && bottomEditorId === 'jsEditor') jsEditor.layout();
             });
 
             document.addEventListener('mouseup', () => {
                 if (!isResizingVertical) return;
                 isResizingVertical = false;
                 document.body.style.cursor = 'default';
-                
-                // Recalcular y aplicar los valores de flex-grow basados en las alturas finales en píxeles
-                // Esto los hace flexibles de nuevo, preservando las proporciones elegidas por el usuario.
-                updateEditorFlexGrow();
+                document.body.style.userSelect = 'auto';
             });
         }
 
-        // Función para actualizar los valores de flex-grow de los editores
-        // Se llama después de un redimensionamiento vertical o al redimensionar la ventana principal
-        function updateEditorFlexGrow() {
-            // Calcular la altura total disponible para los editores, restando elementos fijos (H2, labels, botón, resizers, gaps)
-            const editorPanelClientHeight = editorPanel.clientHeight;
-            let fixedHeights = 0;
-            // Sumar las alturas de los elementos fijos dentro de editorPanel (H2, labels, botón, resizers)
-            // Se suman directamente los offsets y los márgenes inferiores si los tienen
-            fixedHeights += (document.querySelector('.editor-section h2') ? document.querySelector('.editor-section h2').offsetHeight : 0) +
-                            (document.querySelector('.editor-section h2') ? parseFloat(getComputedStyle(document.querySelector('.editor-section h2')).marginBottom) : 0);
-            fixedHeights += (document.querySelector('label[for="htmlEditor"]') ? document.querySelector('label[for="htmlEditor"]').offsetHeight : 0) +
-                            (document.querySelector('label[for="htmlEditor"]') ? parseFloat(getComputedStyle(document.querySelector('label[for="htmlEditor"]')).marginBottom) : 0);
-            fixedHeights += (document.querySelector('label[for="cssEditor"]') ? document.querySelector('label[for="cssEditor"]').offsetHeight : 0) +
-                            (document.querySelector('label[for="cssEditor"]') ? parseFloat(getComputedStyle(document.querySelector('label[for="cssEditor"]')).marginBottom) : 0);
-            fixedHeights += (document.querySelector('label[for="jsEditor"]') ? document.querySelector('label[for="jsEditor"]').offsetHeight : 0) +
-                            (document.querySelector('label[for="jsEditor"]') ? parseFloat(getComputedStyle(document.querySelector('label[for="jsEditor"]')).marginBottom) : 0);
-            fixedHeights += (document.getElementById('downloadBtn') ? document.getElementById('downloadBtn').offsetHeight : 0) +
-                            (document.getElementById('downloadBtn') ? parseFloat(getComputedStyle(document.getElementById('downloadBtn')).marginTop) : 0);
-            fixedHeights += (document.getElementById('resizerHtmlCss') ? document.getElementById('resizerHtmlCss').offsetHeight : 0);
-            fixedHeights += (document.getElementById('resizerCssJs') ? document.getElementById('resizerCssJs').offsetHeight : 0);
-            
-            // Sumar los gaps definidos en el CSS del editor-section
-            // Multiplicamos por el número de gaps entre los elementos principales (editor containers y resizers)
-            fixedHeights += 2 * parseFloat(getComputedStyle(editorPanel).gap);
+        // Configurar los resizers verticales
+        setupVerticalResizer('resizerHtmlCss', 'htmlEditor', 'cssEditor');
+        setupVerticalResizer('resizerCssJs', 'cssEditor', 'jsEditor');
 
-            const totalAvailableEditorHeightForFlex = editorPanelClientHeight - fixedHeights;
-
-            if (totalAvailableEditorHeightForFlex <= 0) return; // Evitar división por cero o negativo
-
-            // Obtener las alturas actuales de los nodos DOM de los editores Monaco
-            const htmlNode = document.getElementById('htmlEditor');
-            const cssNode = document.getElementById('cssEditor');
-            const jsNode = document.getElementById('jsEditor');
-
-            const currentHtmlHeight = htmlNode.offsetHeight;
-            const currentCssHeight = cssNode.offsetHeight;
-            const currentJsHeight = jsNode.offsetHeight;
-
-            const totalCurrentEditorHeight = currentHtmlHeight + currentCssHeight + jsHeight;
-
-            if (totalCurrentEditorHeight <= 0) return;
-
-            // Calcular las nuevas proporciones de flex-grow basadas en las alturas actuales
-            const htmlFlex = currentHtmlHeight / totalCurrentEditorHeight;
-            const cssFlex = currentCssHeight / totalCurrentEditorHeight;
-            const jsFlex = jsHeight / totalCurrentEditorHeight;
-
-            // Aplicar los nuevos valores de flex-grow a los contenedores
-            htmlNode.style.flexGrow = htmlFlex;
-            cssNode.style.flexGrow = cssFlex;
-            jsNode.style.flexGrow = jsFlex;
-
-            // Asegurarse de que no queden estilos 'height' explícitos de arrastres anteriores
-            htmlNode.style.height = '';
-            cssNode.style.height = '';
-            jsNode.style.height = '';
-
-            // Forzar el layout de Monaco para que se adapte
-            if (htmlEditor) htmlEditor.layout();
-            if (cssEditor) cssEditor.layout();
-            if (jsEditor) jsEditor.layout();
-        }
-
-        // Asegurarse de que Monaco Editor se redimensione y las proporciones se mantengan
+        // Manejo de redimensionamiento de ventana
         window.addEventListener('resize', () => {
-            // Recalcular y aplicar flex-grow para los editores verticales
-            // Esto asegura que las proporciones se ajusten al nuevo tamaño del 'editorPanel'
-            updateEditorFlexGrow();
-
-            // Y siempre llamar a layout para los editores de Monaco (se encarga de su contenido interno)
-            if (htmlEditor) htmlEditor.layout();
-            if (cssEditor) cssEditor.layout();
-            if (jsEditor) jsEditor.layout();
+            setTimeout(() => {
+                if (htmlEditor) htmlEditor.layout();
+                if (cssEditor) cssEditor.layout();
+                if (jsEditor) jsEditor.layout();
+            }, 100);
         });
 
-        // Lógica para hacer desaparecer el párrafo descriptivo después de 10 segundos
+        // Desaparecer descripción después de 10 segundos
         document.addEventListener('DOMContentLoaded', () => {
             const descriptionText = document.getElementById('description-text');
             if (descriptionText) {
                 setTimeout(() => {
                     descriptionText.style.opacity = '0';
-                    descriptionText.addEventListener('transitionend', () => {
+                    setTimeout(() => {
                         descriptionText.style.display = 'none';
-                    }, { once: true });
-                }, 10000); // 10 segundos
+                    }, 500);
+                }, 10000);
             }
         });
+
+        // Configurar resizers después de que Monaco esté listo
+        setTimeout(() => {
+            setupVerticalResizer('resizerHtmlCss', 'htmlEditor', 'cssEditor');
+            setupVerticalResizer('resizerCssJs', 'cssEditor', 'jsEditor');
+        }, 1000);
     </script>
 </body>
 </html>
-
