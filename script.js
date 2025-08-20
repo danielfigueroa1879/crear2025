@@ -355,3 +355,30 @@ document.addEventListener('DOMContentLoaded', () => {
     setupVerticalResizer('resizerCssJs', 'cssEditor', 'jsEditor');
 });
 
+
+
+
+
+    // Configuración explícita para el autocierre de etiquetas HTML
+    monaco.languages.html.htmlDefaults.setOptions({
+        format: {
+            enable: true,
+            indentInnerHtml: true,
+            indentBody: true,
+            endWithNewline: true,
+            extraLiners: "head, body, /html",
+            wrapLineLength: 120,
+            unformatted: "",
+            contentUnformatted: "",
+            indentHandlebars: false,
+            preserveNewLines: true,
+            maxPreserveNewLines: null,
+            indentEmptyLines: false,
+            unformattedContentDelimiter: "",
+        },
+        completion: {
+            autoClosingTags: true,
+        },
+    });
+
+
