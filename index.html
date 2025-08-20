@@ -187,7 +187,7 @@
             <label for="jsEditor">JavaScript:</label>
             <div id="jsEditor" class="monaco-editor-container"></div>
             
-            <button id="downloadBtn" onclick="downloadPage()">Descargar Página Web</button>
+            <button id="downloadBtn" onclick="downloadPage()">Descargar Proyecto (.zip)</button>
         </div>
         
         <div class="resizer-horizontal" id="resizerHorizontal"></div>
@@ -198,7 +198,10 @@
         </div>
     </div>
 
+    <!-- Librerías para Monaco Editor, JSZip, FileSaver.js -->
     <script src="https://cdnjs.cloudflare.com/ajax/libs/monaco-editor/0.34.1/min/vs/loader.min.js"></script>
+    <script src="https://cdnjs.cloudflare.com/ajax/libs/jszip/3.10.1/jszip.min.js"></script>
+    <script src="https://cdnjs.cloudflare.com/ajax/libs/FileSaver.js/2.0.5/FileSaver.min.js"></script>
     <script>
         let htmlEditor, cssEditor, jsEditor; // Variables para almacenar las instancias de los editores
 
@@ -213,11 +216,13 @@
     <meta charset="UTF-8">
     <meta name="viewport" content="width=device-width, initial-scale=1.0">
     <title>Mi Página</title>
+    <link rel="stylesheet" href="style.css">
 </head>
 <body>
     <h1>¡Hola desde HTML!</h1>
     <p>Este es un párrafo de ejemplo.</p>
-    <button>Haz clic</button>
+    <button id="myButton">Haz clic</button>
+    <script src="script.js"></script>
 </body>
 </html>`,
                 language: 'html',
@@ -237,6 +242,7 @@
     background-color: #f0f8ff; 
     color: #333; 
     font-family: 'Inter', sans-serif; 
+    padding: 20px;
 } 
 h1 { 
     color: #2c3e50; 
@@ -254,6 +260,10 @@ button {
     border: none;
     border-radius: 5px;
     cursor: pointer;
+    font-size: 16px;
+}
+button:hover {
+    background-color: #45a049;
 }`,
                 language: 'css',
                 theme: 'vs-dark',
@@ -266,12 +276,13 @@ button {
 
             // Inicializar editor JavaScript
             jsEditor = monaco.editor.create(document.getElementById('jsEditor'), {
-                value: `document.addEventListener('DOMContentLoaded', () => {
-    console.log('¡Página creada con IA y lista!');
-    const button = document.querySelector('button');
+                value: `document.addEventListener('DOMContentLoaded', function() {
+    console.log('¡Página lista!');
+    
+    const button = document.getElementById('myButton');
     if (button) {
-        button.addEventListener('click', () => {
-            alert('¡Has hecho clic en el botón!'); // Considera usar un modal personalizado en lugar de alert()
+        button.addEventListener('click', function() {
+            alert('¡Botón clickeado!'); // Considera usar un modal personalizado en lugar de alert()
         });
     }
 });`,
@@ -280,7 +291,6 @@ button {
                 automaticLayout: true,
                 minimap: { enabled: false },
                 autoClosingBrackets: 'always',
-                autoClosingQuotes: 'always',
                 autoIndent: 'full'
             });
 
@@ -302,7 +312,21 @@ button {
             const preview = document.getElementById('previewFrame');
             const doc = preview.contentDocument || preview.contentWindow.document;
             
+            // Limpiar el documento del iframe para evitar contenido duplicado
             doc.open();
+            
+            // Excluir las etiquetas <html>, <head>, <body> y DOCTYPE de la vista previa
+            // ya que el iframe ya provee estas estructuras.
+            // También se eliminan <link> y <script> externos para evitar errores de carga
+            // y asegurar que CSS y JS se inyecten directamente.
+            const cleanHtml = html
+                .replace(/<!DOCTYPE[^>]*>/gi, '')
+                .replace(/<html[^>]*>/gi, '')
+                .replace(/<\/html>/gi, '')
+                .replace(/<head[^>]*>[\s\S]*?<\/head>/gi, '') // Eliminar head completo
+                .replace(/<body[^>]*>/gi, '')
+                .replace(/<\/body>/gi, '');
+
             doc.write(`
                 <!DOCTYPE html>
                 <html>
@@ -314,46 +338,62 @@ button {
                     <style>${css}</style>
                 </head>
                 <body>
-                    ${html}
-                    <script>${js}<\/script>
+                    ${cleanHtml}
+                    <script>
+                        // Envuelve el JS en un try-catch para evitar que errores detengan la vista previa
+                        try {
+                            ${js}
+                        } catch (e) {
+                            console.error('Error en JavaScript de la vista previa:', e);
+                        }
+                    <\/script>
                 </body>
                 </html>
             `);
             doc.close();
         }
 
-        // Función para descargar la página completa
-        function downloadPage() {
-            const html = htmlEditor ? htmlEditor.getValue() : '';
-            const css = cssEditor ? cssEditor.getValue() : '';
-            const js = jsEditor ? jsEditor.getValue() : '';
-            
-            const fullPage = `
-                <!DOCTYPE html>
-                <html lang="es">
-                <head>
-                    <meta charset="UTF-8">
-                    <meta name="viewport" content="width=device-width, initial-scale=1.0">
-                    <title>Página Web Generada</title>
-                    <link href="https://fonts.googleapis.com/css2?family=Inter:wght@400;700&display=swap" rel="stylesheet">
-                    <style>${css}</style>
-                </head>
-                <body>
-                    ${html}
-                    <script>${js}<\/script>
-                </body>
-                </html>
-            `;
-            
-            const blob = new Blob([fullPage], { type: 'text/html' });
-            const url = URL.createObjectURL(blob);
-            const a = document.createElement('a');
-            a.href = url;
-            a.download = 'pagina_web_generada.html';
-            document.body.appendChild(a);
-            a.click();
-            document.body.removeChild(a);
-            URL.revokeObjectURL(url);
+        // Función para descargar la página completa como un archivo .zip
+        async function downloadPage() {
+            try {
+                // Verificar que los editores estén inicializados
+                if (!htmlEditor || !cssEditor || !jsEditor) {
+                    alert('Los editores no están listos. Por favor, espera un momento y vuelve a intentarlo.');
+                    return;
+                }
+
+                const htmlContent = htmlEditor.getValue();
+                const cssContent = cssEditor.getValue();
+                const jsContent = jsEditor.getValue();
+
+                const zip = new JSZip();
+
+                // Asegurarse de que el HTML tenga las referencias correctas a style.css y script.js
+                let finalHtml = htmlContent;
+                if (!finalHtml.includes('style.css')) {
+                    // Insertar la referencia CSS antes de </head>
+                    finalHtml = finalHtml.replace(/<\/head>/i, '    <link rel="stylesheet" href="style.css">\n</head>');
+                }
+                if (!finalHtml.includes('script.js')) {
+                    // Insertar la referencia JS antes de </body>
+                    finalHtml = finalHtml.replace(/<\/body>/i, '    <script src="script.js"></script>\n</body>');
+                }
+
+                // Añadir los archivos al ZIP
+                zip.file("index.html", finalHtml);
+                zip.file("style.css", cssContent);
+                zip.file("script.js", jsContent);
+
+                // Generar el archivo ZIP
+                const content = await zip.generateAsync({ type: "blob" });
+                
+                // Usar FileSaver.js para guardar el archivo
+                saveAs(content, "proyecto-web.zip");
+
+            } catch (error) {
+                console.error('Error al descargar el proyecto:', error);
+                alert('Ocurrió un error al descargar el proyecto. Por favor, inténtalo de nuevo.');
+            }
         }
 
         /* --- Lógica de Redimensionamiento Horizontal (Editor vs. Preview) --- */
@@ -468,19 +508,31 @@ button {
                 }
                 
                 // Asegurar que la suma de alturas sea consistente si los límites se activan
-                if (finalTopHeight + finalBottomHeight !== totalCombinedHeightPx) {
-                    // Redistribuir el exceso/déficit si las alturas se "desajustaron"
-                    const diff = (finalTopHeight + finalBottomHeight) - totalCombinedHeightPx;
-                    if (diff > 0) { // Hay exceso, achicar el que no está en el mínimo
-                        if (finalTopHeight > minHeightPx) finalTopHeight -= diff;
-                        else if (finalBottomHeight > minHeightPx) finalBottomHeight -= diff;
-                    } else if (diff < 0) { // Hay déficit, agrandar el que no está en el máximo
-                        if (finalTopHeight < totalCombinedHeightPx - minHeightPx) finalTopHeight -= diff; // Add the difference
-                        else if (finalBottomHeight < totalCombinedHeightPx - minHeightPx) finalBottomHeight -= diff;
+                const currentSum = finalTopHeight + finalBottomHeight;
+                if (Math.abs(currentSum - totalCombinedHeightPx) > 1) { // Pequeña tolerancia para errores de redondeo
+                    const diff = totalCombinedHeightPx - currentSum;
+                    if (diff > 0) { // Necesita crecer
+                        if (finalTopHeight > minHeightPx && finalBottomHeight === minHeightPx) {
+                            finalTopHeight += diff;
+                        } else if (finalBottomHeight > minHeightPx && finalTopHeight === minHeightPx) {
+                            finalBottomHeight += diff;
+                        } else {
+                            finalTopHeight += diff / 2;
+                            finalBottomHeight += diff / 2;
+                        }
+                    } else if (diff < 0) { // Necesita encogerse
+                         if (finalTopHeight > minHeightPx && finalBottomHeight === minHeightPx) {
+                            finalTopHeight += diff;
+                        } else if (finalBottomHeight > minHeightPx && finalTopHeight === minHeightPx) {
+                            finalBottomHeight += diff;
+                        } else {
+                            finalTopHeight += diff / 2;
+                            finalBottomHeight += diff / 2;
+                        }
                     }
                 }
 
-                // Asegurar que ninguna de las alturas finales quede por debajo del mínimo
+                // Asegurar que ninguna de las alturas finales quede por debajo del mínimo (doble chequeo)
                 finalTopHeight = Math.max(minHeightPx, finalTopHeight);
                 finalBottomHeight = Math.max(minHeightPx, finalBottomHeight);
 
@@ -541,13 +593,13 @@ button {
             const resizerCssJs = document.getElementById('resizerCssJs');
             if (resizerHtmlCss) {
                 calculatedFixedElementsHeight += resizerHtmlCss.offsetHeight;
-                // Margen inferior del resizer-vertical. Se superpone con el margin-bottom del editor de arriba
-                // y contribuye al espaciado con el editor de abajo.
                 calculatedFixedElementsHeight += parseFloat(getComputedStyle(resizerHtmlCss).marginBottom || '0px');
+                calculatedFixedElementsHeight += parseFloat(getComputedStyle(resizerHtmlCss).marginTop || '0px'); // Considerar el margin-top del resizer
             }
             if (resizerCssJs) {
                 calculatedFixedElementsHeight += resizerCssJs.offsetHeight;
                 calculatedFixedElementsHeight += parseFloat(getComputedStyle(resizerCssJs).marginBottom || '0px');
+                calculatedFixedElementsHeight += parseFloat(getComputedStyle(resizerCssJs).marginTop || '0px'); // Considerar el margin-top del resizer
             }
             
             // Total de altura disponible para los *contenedores de los editores*
@@ -574,7 +626,7 @@ button {
 
             const currentHtmlHeight = htmlNode.offsetHeight;
             const currentCssHeight = cssNode.offsetHeight;
-            const currentJsHeight = jsNode.offsetHeight; // Corregido: antes era jsHeight
+            const currentJsHeight = jsNode.offsetHeight;
 
             const totalCurrentEditorHeightSum = currentHtmlHeight + currentCssHeight + currentJsHeight;
             
