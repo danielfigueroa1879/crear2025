@@ -3,407 +3,622 @@
 <head>
     <meta charset="UTF-8">
     <meta name="viewport" content="width=device-width, initial-scale=1.0">
-    <title>Editor Web</title>
+    <title>Creador de Páginas Web con IA</title>
     <style>
-        * { 
-            box-sizing: border-box; 
-            margin: 0;
-            padding: 0;
-        }
-        
         body {
             font-family: Arial, sans-serif;
-            background: #1e1e1e;
+            margin: 0;
+            background-color: #1e1e1e;
             color: #e0e0e0;
             display: flex;
             flex-direction: column;
             min-height: 100vh;
-            overflow: hidden;
         }
-        
         h1 {
-            padding: 15px;
             text-align: center;
-            background: #0d0d0d;
-            border-bottom: 1px solid #333;
-            font-size: 1.6em;
+            color: #ffffff;
+            padding: 5px 0; /* Aún menos padding vertical */
+            margin-bottom: 0px; /* Eliminar margen inferior */
+            font-size: 1.8em; /* Tamaño de fuente más pequeño */
+            line-height: 1.1; /* Altura de línea más ajustada */
         }
-        
+        #description-text { /* ID para el párrafo descriptivo */
+            text-align: center;
+            margin-bottom: 5px; /* Menos margen inferior para la descripción */
+            padding: 0 20px;
+            font-size: 0.8em; /* Texto de descripción aún más pequeño */
+            transition: opacity 0.5s ease-out; /* Transición para que desaparezca suavemente */
+        }
         .container {
-            display: flex;
             flex: 1;
+            display: flex;
+            flex-wrap: nowrap;
+            gap: 0;
+            margin: 0 20px 20px 20px;
+            border-radius: 8px;
             overflow: hidden;
+            background-color: #2d2d2d;
         }
-        
-        .editor-section {
-            flex: 1;
-            background: #1e1e1e;
-            display: flex;
-            flex-direction: column;
+        .editor-section { /* Contenedor para los editores y sus redimensionadores */
+            flex-grow: 1;
+            padding: 20px;
+            box-sizing: border-box;
             min-width: 200px;
+            display: flex;
+            flex-direction: column; /* Apilar los editores verticalmente */
+            background-color: #2d2d2d;
+            position: relative;
+            /* gap: 15px; Eliminado el gap para gestionar el espaciado con los redimensionadores */
         }
-        
         .preview {
-            flex: 1;
-            background: #fff;
+            flex-grow: 1;
+            background-color: #ffffff;
+            color: #1e1e1e;
             display: flex;
             flex-direction: column;
-            min-width: 200px;
+            padding: 20px; /* Añadir padding a la vista previa */
+            box-sizing: border-box;
+            min-width: 200px; /* Ancho mínimo para la vista previa */
         }
-        
-        .section-header {
-            padding: 10px 15px;
-            background: #2d2d2d;
-            border-bottom: 1px solid #444;
-            font-size: 0.9em;
-            font-weight: 600;
-            color: #fff;
+        h2 {
+            color: #ffffff;
+            margin-top: 0;
+            margin-bottom: 15px; /* Mantener margen para H2 */
         }
-        
-        .editor-label {
-            padding: 8px 15px;
-            background: #252526;
-            font-size: 0.8em;
-            font-weight: bold;
-            color: #bbb;
-            border-bottom: 1px solid #333;
+        .preview h2 {
+            color: #1e1e1e;
         }
-        
-        .editor-wrapper {
-            flex: 1;
-            display: flex;
-            flex-direction: column;
-            min-height: 120px;
-        }
-        
         .monaco-editor-container {
-            flex: 1;
-            min-height: 100px;
+            flex-basis: 0; /* Importante para el comportamiento de flex-grow */
+            flex-grow: 1; /* Distribución inicial equitativa */
+            border: 1px solid #555;
+            border-radius: 4px;
+            overflow: hidden;
+            min-height: 50px; /* Altura mínima para cada editor */
+            margin-bottom: 15px; /* Margen entre contenedores de editor */
         }
-        
-        .resizer-vertical {
-            height: 6px;
-            background: #444;
-            cursor: row-resize;
-            border-top: 1px solid #333;
-            border-bottom: 1px solid #333;
+        /* El último monaco-editor-container no debe tener margen inferior */
+        .monaco-editor-container:last-of-type {
+            margin-bottom: 0;
         }
-        
-        .resizer-vertical:hover {
-            background: #008CBA;
+
+        label {
+            color: #ffffff;
+            font-weight: bold;
+            margin-bottom: 5px; /* Aún se necesita margen para las etiquetas */
+            display: block;
         }
-        
-        .resizer-horizontal {
-            width: 6px;
-            background: #444;
-            cursor: col-resize;
-        }
-        
-        .resizer-horizontal:hover {
-            background: #008CBA;
-        }
-        
-        #previewFrame {
+        button {
+            display: block;
             width: 100%;
-            height: 100%;
-            border: none;
-            background: #fff;
-            flex: 1;
-        }
-        
-        .download-button {
-            padding: 15px;
-            background: #008CBA;
+            padding: 10px;
+            background-color: #4CAF50;
             color: white;
             border: none;
+            border-radius: 4px;
             cursor: pointer;
-            font-weight: 600;
+            font-size: 16px;
+            transition: background-color 0.3s ease;
+            margin-top: auto; /* Empuja el botón hacia abajo */
         }
-        
-        .download-button:hover {
-            background: #007B9A;
+        button:hover {
+            background-color: #45a049;
         }
-        
+        #downloadBtn {
+            background-color: #008CBA;
+            margin-top: 10px;
+        }
+        #downloadBtn:hover {
+            background-color: #007B9A;
+        }
+        /* Resizer Horizontal (entre editor y preview) */
+        .resizer-horizontal {
+            width: 8px;
+            background-color: #444;
+            cursor: ew-resize;
+            flex-shrink: 0;
+            transition: background-color 0.2s ease;
+        }
+        .resizer-horizontal:hover {
+            background-color: #008CBA;
+        }
+        /* Resizer Vertical (entre los editores de código) */
+        .resizer-vertical {
+            height: 8px;
+            background-color: #444;
+            cursor: ns-resize;
+            flex-shrink: 0;
+            margin-top: -10px; /* Ajustar para que se superponga con el margen del editor de arriba */
+            margin-bottom: 15px; /* Margen inferior para el siguiente editor o botón */
+            transition: background-color 0.2s ease;
+        }
+        .resizer-vertical:hover {
+            background-color: #008CBA;
+        }
+        iframe {
+            width: 100%;
+            flex: 1;
+            border: 1px solid #ccc;
+            background-color: #ffffff;
+            border-radius: 4px;
+            box-sizing: border-box;
+        }
+
         @media (max-width: 768px) {
-            .container { 
-                flex-direction: column; 
+            .container {
+                flex-direction: column;
+                margin: 20px;
             }
-            
+            .editor-section, .preview {
+                min-width: auto;
+                width: 100%;
+            }
             .resizer-horizontal {
                 width: 100%;
-                height: 6px;
-                cursor: row-resize;
+                height: 8px;
+                cursor: ns-resize;
+            }
+            .editor-section {
+                border-bottom: 1px solid #444;
+            }
+            .preview {
+                border-top: none;
             }
         }
     </style>
 </head>
 <body>
-    <h1>Editor de Páginas Web</h1>
+    <h1>Creador de Páginas Web con IA</h1>
+    <p id="description-text">Esta herramienta facilita la creación de páginas web para todos. Ingresa tu contenido en HTML, CSS y JavaScript, y visualiza el resultado en tiempo real. Puedes descargar la página generada como un archivo HTML completo.</p>
     
     <div class="container">
         <div class="editor-section" id="editorPanel">
-            <div class="section-header">Editor de Código</div>
-            
-            <div class="editor-label">HTML</div>
-            <div class="editor-wrapper" id="htmlEditorWrapper">
-                <div id="htmlEditor" class="monaco-editor-container"></div>
-            </div>
+            <h2>Editor</h2>
+            <label for="htmlEditor">HTML:</label>
+            <div id="htmlEditor" class="monaco-editor-container"></div>
             
             <div class="resizer-vertical" id="resizerHtmlCss"></div>
-            
-            <div class="editor-label">CSS</div>
-            <div class="editor-wrapper" id="cssEditorWrapper">
-                <div id="cssEditor" class="monaco-editor-container"></div>
-            </div>
+
+            <label for="cssEditor">CSS:</label>
+            <div id="cssEditor" class="monaco-editor-container"></div>
             
             <div class="resizer-vertical" id="resizerCssJs"></div>
+
+            <label for="jsEditor">JavaScript:</label>
+            <div id="jsEditor" class="monaco-editor-container"></div>
             
-            <div class="editor-label">JavaScript</div>
-            <div class="editor-wrapper" id="jsEditorWrapper">
-                <div id="jsEditor" class="monaco-editor-container"></div>
-            </div>
-            
-            <button class="download-button" onclick="downloadFiles()">Descargar HTML</button>
+            <button id="downloadBtn" onclick="downloadPage()">Descargar Página Web</button>
         </div>
         
         <div class="resizer-horizontal" id="resizerHorizontal"></div>
-        
-        <div class="preview">
-            <div class="section-header">Vista Previa</div>
+
+        <div class="preview" id="previewPanel">
+            <h2>Vista Previa</h2>
             <iframe id="previewFrame"></iframe>
         </div>
     </div>
 
     <script src="https://cdnjs.cloudflare.com/ajax/libs/monaco-editor/0.34.1/min/vs/loader.min.js"></script>
     <script>
-        var htmlEditor, cssEditor, jsEditor;
-        
-        require.config({ 
-            paths: { 'vs': 'https://cdnjs.cloudflare.com/ajax/libs/monaco-editor/0.34.1/min/vs' }
-        });
-        
+        let htmlEditor, cssEditor, jsEditor; // Variables para almacenar las instancias de los editores
+
+        // Función para inicializar Monaco Editor
+        require.config({ paths: { 'vs': 'https://cdnjs.cloudflare.com/ajax/libs/monaco-editor/0.34.1/min/vs' }});
         require(['vs/editor/editor.main'], function() {
+            // Inicializar editor HTML
             htmlEditor = monaco.editor.create(document.getElementById('htmlEditor'), {
-                value: '<!DOCTYPE html>\n<html>\n<head>\n    <title>Mi Página</title>\n</head>\n<body>\n    <h1>Hola Mundo</h1>\n    <p>Este es mi párrafo</p>\n    <button>Mi Botón</button>\n</body>\n</html>',
+                value: `<!DOCTYPE html>
+<html lang="es">
+<head>
+    <meta charset="UTF-8">
+    <meta name="viewport" content="width=device-width, initial-scale=1.0">
+    <title>Mi Página</title>
+</head>
+<body>
+    <h1>¡Hola desde HTML!</h1>
+    <p>Este es un párrafo de ejemplo.</p>
+    <button>Haz clic</button>
+</body>
+</html>`,
                 language: 'html',
-                theme: 'vs-dark',
-                automaticLayout: true,
-                minimap: { enabled: false },
-                autoClosingTags: 'always'
+                theme: 'vs-dark', // Tema oscuro
+                automaticLayout: true, // Ajustar automáticamente el tamaño
+                minimap: { enabled: false }, // Desactivar minimap
+                // Opciones para autocompletado y auto-cierre (generalmente activas por defecto)
+                autoClosingBrackets: 'always',
+                autoClosingQuotes: 'always',
+                autoClosingTags: true,
+                autoIndent: 'full'
             });
 
+            // Inicializar editor CSS
             cssEditor = monaco.editor.create(document.getElementById('cssEditor'), {
-                value: 'body {\n    font-family: Arial, sans-serif;\n    background-color: #f0f0f0;\n    padding: 20px;\n}\n\nh1 {\n    color: #333;\n    text-align: center;\n}\n\nbutton {\n    background-color: #4CAF50;\n    color: white;\n    padding: 10px 20px;\n    border: none;\n    border-radius: 4px;\n    cursor: pointer;\n}',
+                value: `body { 
+    background-color: #f0f8ff; 
+    color: #333; 
+    font-family: 'Inter', sans-serif; 
+} 
+h1 { 
+    color: #2c3e50; 
+    font-size: 2.5em; 
+    margin-bottom: 10px; 
+} 
+p { 
+    color: #7f8c8d; 
+    font-size: 1.2em; 
+}
+button {
+    background-color: #4CAF50;
+    color: white;
+    padding: 10px 20px;
+    border: none;
+    border-radius: 5px;
+    cursor: pointer;
+}`,
                 language: 'css',
                 theme: 'vs-dark',
                 automaticLayout: true,
-                minimap: { enabled: false }
+                minimap: { enabled: false },
+                autoClosingBrackets: 'always',
+                autoClosingQuotes: 'always',
+                autoIndent: 'full'
             });
 
+            // Inicializar editor JavaScript
             jsEditor = monaco.editor.create(document.getElementById('jsEditor'), {
-                value: 'document.addEventListener("DOMContentLoaded", function() {\n    var button = document.querySelector("button");\n    if (button) {\n        button.addEventListener("click", function() {\n            alert("¡Botón presionado!");\n        });\n    }\n});',
+                value: `document.addEventListener('DOMContentLoaded', () => {
+    console.log('¡Página creada con IA y lista!');
+    const button = document.querySelector('button');
+    if (button) {
+        button.addEventListener('click', () => {
+            alert('¡Has hecho clic en el botón!'); // Considera usar un modal personalizado en lugar de alert()
+        });
+    }
+});`,
                 language: 'javascript',
                 theme: 'vs-dark',
                 automaticLayout: true,
-                minimap: { enabled: false }
+                minimap: { enabled: false },
+                autoClosingBrackets: 'always',
+                autoClosingQuotes: 'always',
+                autoIndent: 'full'
             });
 
-            htmlEditor.onDidChangeModelContent(function() {
-                autoCloseHTMLTags();
-                updatePreview();
-            });
-            
+            // Escuchar cambios en los editores y actualizar la vista previa
+            htmlEditor.onDidChangeModelContent(updatePreview);
             cssEditor.onDidChangeModelContent(updatePreview);
             jsEditor.onDidChangeModelContent(updatePreview);
 
+            // Inicializar la vista previa al cargar los editores
             updatePreview();
-            setupResizers();
         });
 
-        function autoCloseHTMLTags() {
-            try {
-                if (!htmlEditor) return;
+        // Función para actualizar la vista previa
+        function updatePreview() {
+            const html = htmlEditor ? htmlEditor.getValue() : '';
+            const css = cssEditor ? cssEditor.getValue() : '';
+            const js = jsEditor ? jsEditor.getValue() : '';
+            
+            const preview = document.getElementById('previewFrame');
+            const doc = preview.contentDocument || preview.contentWindow.document;
+            
+            doc.open();
+            doc.write(`
+                <!DOCTYPE html>
+                <html>
+                <head>
+                    <meta charset="UTF-8">
+                    <meta name="viewport" content="width=device-width, initial-scale=1.0">
+                    <title>Vista Previa</title>
+                    <link href="https://fonts.googleapis.com/css2?family=Inter:wght@400;700&display=swap" rel="stylesheet">
+                    <style>${css}</style>
+                </head>
+                <body>
+                    ${html}
+                    <script>${js}<\/script>
+                </body>
+                </html>
+            `);
+            doc.close();
+        }
+
+        // Función para descargar la página completa
+        function downloadPage() {
+            const html = htmlEditor ? htmlEditor.getValue() : '';
+            const css = cssEditor ? cssEditor.getValue() : '';
+            const js = jsEditor ? jsEditor.getValue() : '';
+            
+            const fullPage = `
+                <!DOCTYPE html>
+                <html lang="es">
+                <head>
+                    <meta charset="UTF-8">
+                    <meta name="viewport" content="width=device-width, initial-scale=1.0">
+                    <title>Página Web Generada</title>
+                    <link href="https://fonts.googleapis.com/css2?family=Inter:wght@400;700&display=swap" rel="stylesheet">
+                    <style>${css}</style>
+                </head>
+                <body>
+                    ${html}
+                    <script>${js}<\/script>
+                </body>
+                </html>
+            `;
+            
+            const blob = new Blob([fullPage], { type: 'text/html' });
+            const url = URL.createObjectURL(blob);
+            const a = document.createElement('a');
+            a.href = url;
+            a.download = 'pagina_web_generada.html';
+            document.body.appendChild(a);
+            a.click();
+            document.body.removeChild(a);
+            URL.revokeObjectURL(url);
+        }
+
+        /* --- Lógica de Redimensionamiento Horizontal (Editor vs. Preview) --- */
+        const resizerHorizontal = document.getElementById('resizerHorizontal');
+        const editorPanel = document.getElementById('editorPanel');
+        const previewPanel = document.getElementById('previewPanel');
+        const container = document.querySelector('.container');
+
+        let isResizingHorizontal = false;
+
+        resizerHorizontal.addEventListener('mousedown', (e) => {
+            isResizingHorizontal = true;
+            document.body.style.cursor = 'ew-resize';
+            container.style.userSelect = 'none';
+            container.style.pointerEvents = 'none'; // Prevenir interacción con los hijos durante el arrastre
+            e.preventDefault(); // Evitar selección de texto
+        });
+
+        document.addEventListener('mousemove', (e) => {
+            if (!isResizingHorizontal) return;
+
+            const isColumnLayout = window.matchMedia("(max-width: 768px)").matches;
+
+            if (isColumnLayout) {
+                // Modo columna (móvil): el resizer horizontal actúa como vertical
+                const containerRect = container.getBoundingClientRect();
+                const newHeight = e.clientY - containerRect.top;
+                const totalHeight = containerRect.height;
+                const editorHeightPercentage = (newHeight / totalHeight) * 100;
                 
-                var model = htmlEditor.getModel();
-                if (!model) return;
+                if (editorHeightPercentage > 10 && editorHeightPercentage < 90) {
+                    editorPanel.style.height = `${editorHeightPercentage}%`;
+                    previewPanel.style.height = `${100 - editorHeightPercentage}%`;
+                }
+            } else {
+                // Modo fila (escritorio): redimensionamiento horizontal
+                const containerRect = container.getBoundingClientRect();
+                const newWidth = e.clientX - containerRect.left;
+                const totalWidth = containerRect.width;
+                const editorWidthPercentage = (newWidth / totalWidth) * 100;
                 
-                var position = htmlEditor.getPosition();
-                if (!position) return;
-                
-                var lineContent = model.getLineContent(position.lineNumber);
-                var beforeCursor = lineContent.substring(0, position.column - 1);
-                
-                var tags = ['p', 'button', 'div', 'span', 'h1', 'h2', 'h3', 'a', 'strong', 'em', 'li', 'ul', 'ol'];
-                
-                for (var i = 0; i < tags.length; i++) {
-                    var tag = tags[i];
-                    var openTag = '<' + tag + '>';
-                    var closeTag = '</' + tag + '>';
+                if (editorWidthPercentage > 10 && editorWidthPercentage < 90) {
+                    editorPanel.style.width = `${editorWidthPercentage}%`;
+                    previewPanel.style.width = `${100 - editorWidthPercentage}%`;
                     
-                    if (beforeCursor.endsWith(openTag)) {
-                        var afterCursor = lineContent.substring(position.column - 1);
-                        
-                        if (afterCursor.indexOf(closeTag) === -1) {
-                            var edit = {
-                                range: {
-                                    startLineNumber: position.lineNumber,
-                                    startColumn: position.column,
-                                    endLineNumber: position.lineNumber,
-                                    endColumn: position.column
-                                },
-                                text: closeTag
-                            };
-                            
-                            model.pushEditOperations([], [edit], function() { return null; });
-                            htmlEditor.setPosition({
-                                lineNumber: position.lineNumber,
-                                column: position.column
-                            });
-                        }
-                        break;
+                    // Redimensionar editores de Monaco (su layout)
+                    if (htmlEditor) htmlEditor.layout();
+                    if (cssEditor) cssEditor.layout();
+                    if (jsEditor) jsEditor.layout();
+                }
+            }
+        });
+
+        document.addEventListener('mouseup', () => {
+            if (isResizingHorizontal) {
+                isResizingHorizontal = false;
+                document.body.style.cursor = 'default';
+                container.style.userSelect = 'auto';
+                container.style.pointerEvents = 'auto';
+            }
+        });
+
+        /* --- Lógica de Redimensionamiento Vertical (entre editores) --- */
+        function setupVerticalResizer(resizerId, topEditorContainerId, bottomEditorContainerId) {
+            const resizer = document.getElementById(resizerId);
+            const topEditorContainer = document.getElementById(topEditorContainerId);
+            const bottomEditorContainer = document.getElementById(bottomEditorContainerId);
+
+            let isResizingVertical = false;
+            let startY;
+            let initialTopHeightPx;
+            let initialBottomHeightPx;
+            let totalCombinedHeightPx;
+
+            resizer.addEventListener('mousedown', (e) => {
+                isResizingVertical = true;
+                e.preventDefault(); // Prevenir selección de texto
+                document.body.style.cursor = 'ns-resize';
+                startY = e.clientY;
+
+                initialTopHeightPx = topEditorContainer.offsetHeight;
+                initialBottomHeightPx = bottomEditorContainer.offsetHeight;
+                totalCombinedHeightPx = initialTopHeightPx + initialBottomHeightPx;
+
+                // Establecer explícitamente las alturas en píxeles y deshabilitar flex-grow
+                topEditorContainer.style.height = `${initialTopHeightPx}px`;
+                bottomEditorContainer.style.height = `${initialBottomHeightPx}px`;
+                topEditorContainer.style.flexGrow = '0';
+                bottomEditorContainer.style.flexGrow = '0';
+            });
+
+            document.addEventListener('mousemove', (e) => {
+                if (!isResizingVertical) return;
+
+                const dy = e.clientY - startY;
+                let newHeightTopCandidate = initialTopHeightPx + dy;
+                let newHeightBottomCandidate = initialBottomHeightPx - dy;
+
+                const minHeightPx = 50;
+
+                let finalTopHeight = newHeightTopCandidate;
+                let finalBottomHeight = newHeightBottomCandidate;
+
+                // Aplicar restricciones de altura mínima
+                if (finalTopHeight < minHeightPx) {
+                    finalTopHeight = minHeightPx;
+                    finalBottomHeight = totalCombinedHeightPx - finalTopHeight;
+                }
+                if (finalBottomHeight < minHeightPx) {
+                    finalBottomHeight = minHeightPx;
+                    finalTopHeight = totalCombinedHeightPx - finalBottomHeight;
+                }
+                
+                // Asegurar que la suma de alturas sea consistente si los límites se activan
+                if (finalTopHeight + finalBottomHeight !== totalCombinedHeightPx) {
+                    // Redistribuir el exceso/déficit si las alturas se "desajustaron"
+                    const diff = (finalTopHeight + finalBottomHeight) - totalCombinedHeightPx;
+                    if (diff > 0) { // Hay exceso, achicar el que no está en el mínimo
+                        if (finalTopHeight > minHeightPx) finalTopHeight -= diff;
+                        else if (finalBottomHeight > minHeightPx) finalBottomHeight -= diff;
+                    } else if (diff < 0) { // Hay déficit, agrandar el que no está en el máximo
+                        if (finalTopHeight < totalCombinedHeightPx - minHeightPx) finalTopHeight -= diff; // Add the difference
+                        else if (finalBottomHeight < totalCombinedHeightPx - minHeightPx) finalBottomHeight -= diff;
                     }
                 }
-            } catch (error) {
-                console.log('Error en autocompletado');
-            }
-        }
 
-        function updatePreview() {
-            try {
-                if (!htmlEditor || !cssEditor || !jsEditor) return;
-                
-                var html = htmlEditor.getValue();
-                var css = cssEditor.getValue();
-                var js = jsEditor.getValue();
-                
-                var preview = document.getElementById('previewFrame');
-                if (!preview) return;
-                
-                var doc = preview.contentDocument || preview.contentWindow.document;
-                
-                var content = '<!DOCTYPE html><html><head><meta charset="UTF-8"><style>' + css + '</style></head><body>' + html + '<script>' + js + '</script></body></html>';
-                
-                doc.open();
-                doc.write(content);
-                doc.close();
-            } catch (error) {
-                console.log('Error en vista previa');
-            }
-        }
+                // Asegurar que ninguna de las alturas finales quede por debajo del mínimo
+                finalTopHeight = Math.max(minHeightPx, finalTopHeight);
+                finalBottomHeight = Math.max(minHeightPx, finalBottomHeight);
 
-        function setupResizers() {
-            var resizerHorizontal = document.getElementById('resizerHorizontal');
-            var editorPanel = document.getElementById('editorPanel');
-            var isResizing = false;
 
-            resizerHorizontal.addEventListener('mousedown', function(e) {
-                isResizing = true;
-                e.preventDefault();
-            });
+                topEditorContainer.style.height = `${finalTopHeight}px`;
+                bottomEditorContainer.style.height = `${finalBottomHeight}px`;
 
-            document.addEventListener('mousemove', function(e) {
-                if (!isResizing) return;
-
-                var containerWidth = document.querySelector('.container').offsetWidth;
-                var newWidth = (e.clientX / containerWidth) * 100;
-                
-                if (newWidth > 20 && newWidth < 80) {
-                    editorPanel.style.flex = '0 0 ' + newWidth + '%';
-                }
-            });
-
-            document.addEventListener('mouseup', function() {
-                if (!isResizing) return;
-                isResizing = false;
-                
-                setTimeout(function() {
-                    if (htmlEditor) htmlEditor.layout();
-                    if (cssEditor) cssEditor.layout();
-                    if (jsEditor) jsEditor.layout();
-                }, 100);
-            });
-
-            setupVerticalResizer('resizerHtmlCss', 'htmlEditorWrapper', 'cssEditorWrapper');
-            setupVerticalResizer('resizerCssJs', 'cssEditorWrapper', 'jsEditorWrapper');
-        }
-
-        function setupVerticalResizer(resizerId, topId, bottomId) {
-            var resizer = document.getElementById(resizerId);
-            var topElement = document.getElementById(topId);
-            var bottomElement = document.getElementById(bottomId);
-            
-            var isResizing = false;
-            var startY = 0;
-            var startTopHeight = 0;
-            var startBottomHeight = 0;
-
-            resizer.addEventListener('mousedown', function(e) {
-                isResizing = true;
-                startY = e.clientY;
-                startTopHeight = topElement.offsetHeight;
-                startBottomHeight = bottomElement.offsetHeight;
-                e.preventDefault();
-            });
-
-            document.addEventListener('mousemove', function(e) {
-                if (!isResizing) return;
-
-                var deltaY = e.clientY - startY;
-                var newTopHeight = startTopHeight + deltaY;
-                var newBottomHeight = startBottomHeight - deltaY;
-                var minHeight = 100;
-
-                if (newTopHeight >= minHeight && newBottomHeight >= minHeight) {
-                    topElement.style.flex = '0 0 ' + newTopHeight + 'px';
-                    bottomElement.style.flex = '0 0 ' + newBottomHeight + 'px';
-                }
-            });
-
-            document.addEventListener('mouseup', function() {
-                if (!isResizing) return;
-                isResizing = false;
-                
-                setTimeout(function() {
-                    if (htmlEditor) htmlEditor.layout();
-                    if (cssEditor) cssEditor.layout();
-                    if (jsEditor) jsEditor.layout();
-                }, 100);
-            });
-        }
-
-        function downloadFiles() {
-            try {
-                if (!htmlEditor || !cssEditor || !jsEditor) {
-                    alert('Error: Los editores no están listos');
-                    return;
-                }
-
-                var html = htmlEditor.getValue();
-                var css = cssEditor.getValue();
-                var js = jsEditor.getValue();
-
-                var fullHTML = '<!DOCTYPE html>\n<html lang="es">\n<head>\n    <meta charset="UTF-8">\n    <meta name="viewport" content="width=device-width, initial-scale=1.0">\n    <title>Mi Página Web</title>\n    <style>\n' + css + '\n    </style>\n</head>\n<body>\n' + html + '\n    <script>\n' + js + '\n    </script>\n</body>\n</html>';
-
-                var blob = new Blob([fullHTML], { type: 'text/html' });
-                var url = URL.createObjectURL(blob);
-                var a = document.createElement('a');
-                a.href = url;
-                a.download = 'mi-pagina-web.html';
-                document.body.appendChild(a);
-                a.click();
-                document.body.removeChild(a);
-                URL.revokeObjectURL(url);
-            } catch (error) {
-                alert('Error al descargar el archivo');
-            }
-        }
-
-        window.addEventListener('resize', function() {
-            setTimeout(function() {
+                // Redimensionar editores de Monaco (su layout)
                 if (htmlEditor) htmlEditor.layout();
                 if (cssEditor) cssEditor.layout();
                 if (jsEditor) jsEditor.layout();
-            }, 100);
+            });
+
+            document.addEventListener('mouseup', () => {
+                if (!isResizingVertical) return;
+                isResizingVertical = false;
+                document.body.style.cursor = 'default';
+                
+                // Recalcular y aplicar flex-grow para una distribución flexible
+                updateEditorFlexGrow();
+            });
+        }
+
+        // Configurar los redimensionadores verticales
+        setupVerticalResizer('resizerHtmlCss', 'htmlEditor', 'cssEditor');
+        setupVerticalResizer('resizerCssJs', 'cssEditor', 'jsEditor');
+
+
+        // Función para actualizar los valores de flex-grow de los editores
+        // Se llama después de un redimensionamiento vertical o al redimensionar la ventana principal
+        function updateEditorFlexGrow() {
+            // Solo ejecutar si los editores han sido inicializados
+            if (!htmlEditor || !cssEditor || !jsEditor) return;
+
+            const editorPanelClientHeight = editorPanel.clientHeight;
+            let calculatedFixedElementsHeight = 0;
+
+            // Sumar las alturas de los elementos fijos que no son editores
+            // H2 + su margen inferior
+            const h2 = document.querySelector('.editor-section h2');
+            if (h2) {
+                calculatedFixedElementsHeight += h2.offsetHeight;
+                calculatedFixedElementsHeight += parseFloat(getComputedStyle(h2).marginBottom);
+            }
+            // Labels + su margen inferior
+            document.querySelectorAll('.editor-section label').forEach(label => {
+                calculatedFixedElementsHeight += label.offsetHeight;
+                calculatedFixedElementsHeight += parseFloat(getComputedStyle(label).marginBottom);
+            });
+            // Botón de descarga + su margen superior
+            const downloadBtn = document.getElementById('downloadBtn');
+            if (downloadBtn) {
+                calculatedFixedElementsHeight += downloadBtn.offsetHeight;
+                calculatedFixedElementsHeight += parseFloat(getComputedStyle(downloadBtn).marginTop);
+            }
+            // Resizers verticales
+            const resizerHtmlCss = document.getElementById('resizerHtmlCss');
+            const resizerCssJs = document.getElementById('resizerCssJs');
+            if (resizerHtmlCss) {
+                calculatedFixedElementsHeight += resizerHtmlCss.offsetHeight;
+                // Margen inferior del resizer-vertical. Se superpone con el margin-bottom del editor de arriba
+                // y contribuye al espaciado con el editor de abajo.
+                calculatedFixedElementsHeight += parseFloat(getComputedStyle(resizerHtmlCss).marginBottom || '0px');
+            }
+            if (resizerCssJs) {
+                calculatedFixedElementsHeight += resizerCssJs.offsetHeight;
+                calculatedFixedElementsHeight += parseFloat(getComputedStyle(resizerCssJs).marginBottom || '0px');
+            }
+            
+            // Total de altura disponible para los *contenedores de los editores*
+            const totalAvailableEditorContainerHeight = editorPanelClientHeight - calculatedFixedElementsHeight;
+            
+            if (totalAvailableEditorContainerHeight <= 0) {
+                // Si no hay espacio, restablecer flex-grow y alturas a lo mínimo o inicial
+                document.getElementById('htmlEditor').style.flexGrow = '1';
+                document.getElementById('cssEditor').style.flexGrow = '1';
+                document.getElementById('jsEditor').style.flexGrow = '1';
+                document.getElementById('htmlEditor').style.height = '';
+                document.getElementById('cssEditor').style.height = '';
+                document.getElementById('jsEditor').style.height = '';
+                if (htmlEditor) htmlEditor.layout();
+                if (cssEditor) cssEditor.layout();
+                if (jsEditor) jsEditor.layout();
+                return;
+            }
+
+            // Obtener las alturas actuales REALES de los nodos DOM de los editores Monaco
+            const htmlNode = document.getElementById('htmlEditor');
+            const cssNode = document.getElementById('cssEditor');
+            const jsNode = document.getElementById('jsEditor');
+
+            const currentHtmlHeight = htmlNode.offsetHeight;
+            const currentCssHeight = cssNode.offsetHeight;
+            const currentJsHeight = jsNode.offsetHeight; // Corregido: antes era jsHeight
+
+            const totalCurrentEditorHeightSum = currentHtmlHeight + currentCssHeight + currentJsHeight;
+            
+            if (totalCurrentEditorHeightSum <= 0) return; // Evitar división por cero
+
+            // Calcular las nuevas proporciones de flex-grow basadas en las alturas actuales
+            const htmlFlex = currentHtmlHeight / totalCurrentEditorHeightSum;
+            const cssFlex = currentCssHeight / totalCurrentEditorHeightSum;
+            const jsFlex = currentJsHeight / totalCurrentEditorHeightSum;
+
+            // Aplicar los nuevos valores de flex-grow a los contenedores
+            htmlNode.style.flexGrow = htmlFlex;
+            cssNode.style.flexGrow = cssFlex;
+            jsNode.style.flexGrow = jsFlex;
+
+            // Asegurarse de que no queden estilos 'height' explícitos de arrastres anteriores
+            htmlNode.style.height = '';
+            cssNode.style.height = '';
+            jsNode.style.height = '';
+
+            // Forzar el layout de Monaco para que se adapte
+            if (htmlEditor) htmlEditor.layout();
+            if (cssEditor) cssEditor.layout();
+            if (jsEditor) jsEditor.layout();
+        }
+
+        // Asegurarse de que Monaco Editor se redimensione y las proporciones se mantengan
+        window.addEventListener('resize', () => {
+            // Recalcular y aplicar flex-grow para los editores verticales
+            updateEditorFlexGrow();
+            // Los layouts de Monaco se llaman dentro de updateEditorFlexGrow
+        });
+
+        // Ocultar descripción después de 10 segundos
+        document.addEventListener('DOMContentLoaded', () => {
+            const descriptionText = document.getElementById('description-text');
+            if (descriptionText) {
+                setTimeout(() => {
+                    descriptionText.style.opacity = '0';
+                    descriptionText.addEventListener('transitionend', () => {
+                        descriptionText.style.display = 'none';
+                    }, { once: true });
+                }, 10000); // 10 segundos
+            }
         });
     </script>
 </body>
