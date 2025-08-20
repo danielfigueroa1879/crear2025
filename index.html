@@ -48,6 +48,7 @@
             flex-direction: column; /* Apilar los editores verticalmente */
             background-color: #2d2d2d;
             position: relative;
+            gap: 15px; /* Espaciado unificado con flexbox gap */
         }
         .preview {
             flex-grow: 1;
@@ -62,14 +63,14 @@
         h2 {
             color: #ffffff;
             margin-top: 0;
-            margin-bottom: 15px;
+            margin-bottom: 15px; /* Mantener margen para H2 */
         }
         .preview h2 {
             color: #1e1e1e;
         }
         .monaco-editor-container {
-            flex: 1; /* Permite que cada editor ocupe el espacio disponible */
-            margin-bottom: 15px; /* Espacio antes del siguiente editor o botón */
+            flex-basis: 0; /* Importante para el comportamiento de flex-grow */
+            flex-grow: 1; /* Distribución inicial equitativa */
             border: 1px solid #555;
             border-radius: 4px;
             overflow: hidden;
@@ -78,7 +79,7 @@
         label {
             color: #ffffff;
             font-weight: bold;
-            margin-bottom: 5px;
+            margin-bottom: 5px; /* Aún se necesita margen para las etiquetas */
             display: block;
         }
         button {
@@ -121,7 +122,6 @@
             background-color: #444;
             cursor: ns-resize;
             flex-shrink: 0;
-            margin-bottom: 15px; /* Alineado con el margen de los contenedores de Monaco */
             transition: background-color 0.2s ease;
         }
         .resizer-vertical:hover {
@@ -360,7 +360,7 @@ button {
             isResizingHorizontal = true;
             document.body.style.cursor = 'ew-resize';
             container.style.userSelect = 'none';
-            container.style.pointerEvents = 'none'; // Evitar interacción con los hijos durante el arrastre
+            container.style.pointerEvents = 'none'; // Prevenir interacción con los hijos durante el arrastre
         });
 
         document.addEventListener('mousemove', (e) => {
@@ -413,61 +413,161 @@ button {
 
             let isResizingVertical = false;
             let startY;
-            let startHeightTop;
-            let startHeightBottom;
-            let parentHeight;
+            let initialTopHeightPx;
+            let initialBottomHeightPx;
+            let totalCombinedHeightPx; // La suma de las alturas de los dos editores durante un arrastre específico
 
             resizer.addEventListener('mousedown', (e) => {
                 isResizingVertical = true;
-                e.preventDefault(); // Evitar selección de texto
-                document.body.style.cursor = 'ns-resize';
+                e.preventDefault(); // Prevenir selección de texto
+                document.body.style.cursor = 'ns-resize'; // Cursor de redimensionamiento norte-sur
                 startY = e.clientY;
-                startHeightTop = topEditorContainer.offsetHeight;
-                startHeightBottom = bottomEditorContainer.offsetHeight;
-                parentHeight = editorPanel.offsetHeight; // Altura total del panel de editores
+
+                // Capturar las alturas iniciales en píxeles y el total combinado
+                initialTopHeightPx = topEditorContainer.offsetHeight;
+                initialBottomHeightPx = bottomEditorContainer.offsetHeight;
+                totalCombinedHeightPx = initialTopHeightPx + initialBottomHeightPx;
+
+                // Establecer explícitamente las alturas en píxeles para el arrastre suave
+                topEditorContainer.style.height = `${initialTopHeightPx}px`;
+                bottomEditorContainer.style.height = `${initialBottomHeightPx}px`;
+                // Deshabilitar flex-grow temporalmente durante el arrastre
+                topEditorContainer.style.flexGrow = '0';
+                bottomEditorContainer.style.flexGrow = '0';
             });
 
             document.addEventListener('mousemove', (e) => {
                 if (!isResizingVertical) return;
 
-                const dy = e.clientY - startY; // Cambio en Y
+                const dy = e.clientY - startY; // Cambio en la posición Y
 
-                // Calcular nuevas alturas en píxeles
-                let newHeightTop = startHeightTop + dy;
-                let newHeightBottom = startHeightBottom - dy;
+                let newHeightTopCandidate = initialTopHeightPx + dy;
+                let newHeightBottomCandidate = initialBottomHeightPx - dy;
 
-                // Límites mínimos de altura para cada editor (ej. 50px)
                 const minHeightPx = 50;
 
-                if (newHeightTop < minHeightPx || newHeightBottom < minHeightPx) {
-                    return; // No permitir que se encojan más allá del mínimo
+                // Aplicar restricciones de altura mínima y asegurar que la suma se mantenga
+                let finalTopHeight = newHeightTopCandidate;
+                let finalBottomHeight = newHeightBottomCandidate;
+
+                // Asegurarse de que el editor superior respete su altura mínima
+                if (finalTopHeight < minHeightPx) {
+                    finalTopHeight = minHeightPx;
+                    finalBottomHeight = totalCombinedHeightPx - finalTopHeight; // Ajustar el inferior para mantener el total
+                }
+                // Asegurarse de que el editor inferior respete su altura mínima
+                if (finalBottomHeight < minHeightPx) {
+                    finalBottomHeight = minHeightPx;
+                    finalTopHeight = totalCombinedHeightPx - finalBottomHeight; // Ajustar el superior para mantener el total
+                }
+
+                // Aplicar un ajuste final si, después de las restricciones, la suma de alturas no es la original
+                // Esto puede ocurrir en casos extremos o si la suma total es menor que 2 * minHeightPx
+                const currentSum = finalTopHeight + finalBottomHeight;
+                if (currentSum !== totalCombinedHeightPx) {
+                    const difference = totalCombinedHeightPx - currentSum;
+                    // Redistribuir la diferencia. Priorizar el crecimiento del que no está en su mínimo.
+                    if (finalTopHeight > minHeightPx && finalBottomHeight === minHeightPx) {
+                        finalTopHeight += difference;
+                    } else if (finalBottomHeight > minHeightPx && finalTopHeight === minHeightPx) {
+                        finalBottomHeight += difference;
+                    } else { // Ambos están en el mínimo o pueden crecer. Distribuir equitativamente.
+                        finalTopHeight += difference / 2;
+                        finalBottomHeight += difference / 2;
+                    }
                 }
                 
-                // Aplicar las nuevas alturas (se pueden usar porcentajes si se prefiere)
-                topEditorContainer.style.height = `${newHeightTop}px`;
-                bottomEditorContainer.style.height = `${newHeightBottom}px`;
+                // Aplicar las nuevas alturas en píxeles
+                topEditorContainer.style.height = `${finalTopHeight}px`;
+                bottomEditorContainer.style.height = `${finalBottomHeight}px`;
 
-                // Forzar el redibujado de Monaco para los editores afectados
-                if (topEditorId === 'htmlEditor' && htmlEditor) htmlEditor.layout();
-                if (topEditorId === 'cssEditor' && cssEditor) cssEditor.layout();
-                if (bottomEditorId === 'cssEditor' && cssEditor) cssEditor.layout();
-                if (bottomEditorId === 'jsEditor' && jsEditor) jsEditor.layout();
+                // Forzar a los editores de Monaco a redibujarse
+                if (htmlEditor) htmlEditor.layout();
+                if (cssEditor) cssEditor.layout();
+                if (jsEditor) jsEditor.layout();
             });
 
             document.addEventListener('mouseup', () => {
                 if (!isResizingVertical) return;
                 isResizingVertical = false;
                 document.body.style.cursor = 'default';
+                
+                // Recalcular y aplicar los valores de flex-grow basados en las alturas finales en píxeles
+                // Esto los hace flexibles de nuevo, preservando las proporciones elegidas por el usuario.
+                updateEditorFlexGrow();
             });
         }
 
-        // Configurar los redimensionadores verticales
-        setupVerticalResizer('resizerHtmlCss', 'htmlEditor', 'cssEditor');
-        setupVerticalResizer('resizerCssJs', 'cssEditor', 'jsEditor');
+        // Función para actualizar los valores de flex-grow de los editores
+        // Se llama después de un redimensionamiento vertical o al redimensionar la ventana principal
+        function updateEditorFlexGrow() {
+            // Calcular la altura total disponible para los editores, restando elementos fijos (H2, labels, botón, resizers, gaps)
+            const editorPanelClientHeight = editorPanel.clientHeight;
+            let fixedHeights = 0;
+            // Sumar las alturas de los elementos fijos dentro de editorPanel (H2, labels, botón, resizers)
+            // Se suman directamente los offsets y los márgenes inferiores si los tienen
+            fixedHeights += (document.querySelector('.editor-section h2') ? document.querySelector('.editor-section h2').offsetHeight : 0) +
+                            (document.querySelector('.editor-section h2') ? parseFloat(getComputedStyle(document.querySelector('.editor-section h2')).marginBottom) : 0);
+            fixedHeights += (document.querySelector('label[for="htmlEditor"]') ? document.querySelector('label[for="htmlEditor"]').offsetHeight : 0) +
+                            (document.querySelector('label[for="htmlEditor"]') ? parseFloat(getComputedStyle(document.querySelector('label[for="htmlEditor"]')).marginBottom) : 0);
+            fixedHeights += (document.querySelector('label[for="cssEditor"]') ? document.querySelector('label[for="cssEditor"]').offsetHeight : 0) +
+                            (document.querySelector('label[for="cssEditor"]') ? parseFloat(getComputedStyle(document.querySelector('label[for="cssEditor"]')).marginBottom) : 0);
+            fixedHeights += (document.querySelector('label[for="jsEditor"]') ? document.querySelector('label[for="jsEditor"]').offsetHeight : 0) +
+                            (document.querySelector('label[for="jsEditor"]') ? parseFloat(getComputedStyle(document.querySelector('label[for="jsEditor"]')).marginBottom) : 0);
+            fixedHeights += (document.getElementById('downloadBtn') ? document.getElementById('downloadBtn').offsetHeight : 0) +
+                            (document.getElementById('downloadBtn') ? parseFloat(getComputedStyle(document.getElementById('downloadBtn')).marginTop) : 0);
+            fixedHeights += (document.getElementById('resizerHtmlCss') ? document.getElementById('resizerHtmlCss').offsetHeight : 0);
+            fixedHeights += (document.getElementById('resizerCssJs') ? document.getElementById('resizerCssJs').offsetHeight : 0);
+            
+            // Sumar los gaps definidos en el CSS del editor-section
+            // Multiplicamos por el número de gaps entre los elementos principales (editor containers y resizers)
+            fixedHeights += 2 * parseFloat(getComputedStyle(editorPanel).gap);
 
+            const totalAvailableEditorHeightForFlex = editorPanelClientHeight - fixedHeights;
 
-        // Asegurar que Monaco Editor se redimensione cuando la ventana cambie de tamaño
+            if (totalAvailableEditorHeightForFlex <= 0) return; // Evitar división por cero o negativo
+
+            // Obtener las alturas actuales de los nodos DOM de los editores Monaco
+            const htmlNode = document.getElementById('htmlEditor');
+            const cssNode = document.getElementById('cssEditor');
+            const jsNode = document.getElementById('jsEditor');
+
+            const currentHtmlHeight = htmlNode.offsetHeight;
+            const currentCssHeight = cssNode.offsetHeight;
+            const currentJsHeight = jsNode.offsetHeight;
+
+            const totalCurrentEditorHeight = currentHtmlHeight + currentCssHeight + jsHeight;
+
+            if (totalCurrentEditorHeight <= 0) return;
+
+            // Calcular las nuevas proporciones de flex-grow basadas en las alturas actuales
+            const htmlFlex = currentHtmlHeight / totalCurrentEditorHeight;
+            const cssFlex = currentCssHeight / totalCurrentEditorHeight;
+            const jsFlex = jsHeight / totalCurrentEditorHeight;
+
+            // Aplicar los nuevos valores de flex-grow a los contenedores
+            htmlNode.style.flexGrow = htmlFlex;
+            cssNode.style.flexGrow = cssFlex;
+            jsNode.style.flexGrow = jsFlex;
+
+            // Asegurarse de que no queden estilos 'height' explícitos de arrastres anteriores
+            htmlNode.style.height = '';
+            cssNode.style.height = '';
+            jsNode.style.height = '';
+
+            // Forzar el layout de Monaco para que se adapte
+            if (htmlEditor) htmlEditor.layout();
+            if (cssEditor) cssEditor.layout();
+            if (jsEditor) jsEditor.layout();
+        }
+
+        // Asegurarse de que Monaco Editor se redimensione y las proporciones se mantengan
         window.addEventListener('resize', () => {
+            // Recalcular y aplicar flex-grow para los editores verticales
+            // Esto asegura que las proporciones se ajusten al nuevo tamaño del 'editorPanel'
+            updateEditorFlexGrow();
+
+            // Y siempre llamar a layout para los editores de Monaco (se encarga de su contenido interno)
             if (htmlEditor) htmlEditor.layout();
             if (cssEditor) cssEditor.layout();
             if (jsEditor) jsEditor.layout();
