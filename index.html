@@ -63,18 +63,12 @@
         .preview h2 {
             color: #1e1e1e; /* Color oscuro para el título en la vista previa */
         }
-        textarea {
-            width: 100%;
+        .monaco-editor-container { /* Contenedor para cada instancia de Monaco Editor */
             flex: 1; /* Ocupar el espacio disponible */
             margin-bottom: 15px;
-            padding: 10px;
-            font-family: 'Courier New', monospace;
-            background-color: #3a3a3a; /* Un poco más claro que el fondo del editor */
-            color: #e0e0e0;
             border: 1px solid #555;
             border-radius: 4px;
-            resize: vertical; /* Permitir solo redimensionamiento vertical */
-            box-sizing: border-box;
+            overflow: hidden; /* Asegurar que el editor no se desborde */
         }
         label {
             color: #ffffff;
@@ -155,21 +149,14 @@
     <div class="container">
         <div class="editor" id="editorPanel">
             <h2>Editor</h2>
-            <label for="html">HTML:</label>
-            <textarea id="html" placeholder="Ingresa tu HTML aquí..."><h1>¡Hola Mundo!</h1><p>Esta es tu página web personalizada.</p></textarea>
+            <label for="htmlEditor">HTML:</label>
+            <div id="htmlEditor" class="monaco-editor-container"></div>
             
-            <label for="css">CSS:</label>
-            <textarea id="css" placeholder="Ingresa tu CSS aquí...">body { background-color: #f0f8ff; color: #333; display: flex; flex-direction: column; align-items: center; justify-content: center; min-height: 100vh; margin: 0; font-family: 'Inter', sans-serif; } h1 { color: #2c3e50; font-size: 2.5em; margin-bottom: 10px; } p { color: #7f8c8d; font-size: 1.2em; text-align: center; max-width: 600px; line-height: 1.6; }</textarea>
+            <label for="cssEditor">CSS:</label>
+            <div id="cssEditor" class="monaco-editor-container"></div>
             
-            <label for="js">JavaScript:</label>
-            <textarea id="js" placeholder="Ingresa tu JavaScript aquí...">document.addEventListener('DOMContentLoaded', () => {
-    console.log('¡Página creada con IA y lista!');
-    // Puedes añadir más interactividad aquí, por ejemplo:
-    // const greetingElement = document.querySelector('h1');
-    // greetingElement.addEventListener('click', () => {
-    //     alert('¡Has hecho clic en el saludo!');
-    // });
-});</textarea>
+            <label for="jsEditor">JavaScript:</label>
+            <div id="jsEditor" class="monaco-editor-container"></div>
             
             <button id="downloadBtn" onclick="downloadPage()">Descargar Página Web</button>
         </div>
@@ -182,12 +169,87 @@
         </div>
     </div>
 
+    <!-- Cargar Monaco Editor -->
+    <script src="https://cdnjs.cloudflare.com/ajax/libs/monaco-editor/0.34.1/min/vs/loader.min.js"></script>
     <script>
+        let htmlEditor, cssEditor, jsEditor; // Variables para almacenar las instancias de los editores
+
+        // Función para inicializar Monaco Editor
+        require.config({ paths: { 'vs': 'https://cdnjs.cloudflare.com/ajax/libs/monaco-editor/0.34.1/min/vs' }});
+        require(['vs/editor/editor.main'], function() {
+            // Inicializar editor HTML
+            htmlEditor = monaco.editor.create(document.getElementById('htmlEditor'), {
+                value: `<h1>¡Hola Mundo!</h1>
+<p>Esta es tu página web personalizada.</p>`,
+                language: 'html',
+                theme: 'vs-dark', // Tema oscuro
+                automaticLayout: true, // Ajustar automáticamente el tamaño
+                minimap: { enabled: false } // Desactivar minimap
+            });
+
+            // Inicializar editor CSS
+            cssEditor = monaco.editor.create(document.getElementById('cssEditor'), {
+                value: `body { 
+    background-color: #f0f8ff; 
+    color: #333; 
+    display: flex; 
+    flex-direction: column; 
+    align-items: center; 
+    justify-content: center; 
+    min-height: 100vh; 
+    margin: 0; 
+    font-family: 'Inter', sans-serif; 
+} 
+h1 { 
+    color: #2c3e50; 
+    font-size: 2.5em; 
+    margin-bottom: 10px; 
+} 
+p { 
+    color: #7f8c8d; 
+    font-size: 1.2em; 
+    text-align: center; 
+    max-width: 600px; 
+    line-height: 1.6; 
+}`,
+                language: 'css',
+                theme: 'vs-dark',
+                automaticLayout: true,
+                minimap: { enabled: false }
+            });
+
+            // Inicializar editor JavaScript
+            jsEditor = monaco.editor.create(document.getElementById('jsEditor'), {
+                value: `document.addEventListener('DOMContentLoaded', () => {
+    console.log('¡Página creada con IA y lista!');
+    // Puedes añadir más interactividad aquí, por ejemplo:
+    // const greetingElement = document.querySelector('h1');
+    // greetingElement.addEventListener('click', () => {
+    //     // Usar un modal en lugar de alert para mejor UX
+    //     showModal('¡Has hecho clic en el saludo!');
+    // });
+});`,
+                language: 'javascript',
+                theme: 'vs-dark',
+                automaticLayout: true,
+                minimap: { enabled: false }
+            });
+
+            // Escuchar cambios en los editores y actualizar la vista previa
+            htmlEditor.onDidChangeModelContent(updatePreview);
+            cssEditor.onDidChangeModelContent(updatePreview);
+            jsEditor.onDidChangeModelContent(updatePreview);
+
+            // Inicializar la vista previa al cargar los editores
+            updatePreview();
+        });
+
         // Función para actualizar la vista previa
         function updatePreview() {
-            const html = document.getElementById('html').value;
-            const css = document.getElementById('css').value;
-            const js = document.getElementById('js').value;
+            // Obtener el valor de los editores de Monaco
+            const html = htmlEditor ? htmlEditor.getValue() : '';
+            const css = cssEditor ? cssEditor.getValue() : '';
+            const js = jsEditor ? jsEditor.getValue() : '';
             
             const preview = document.getElementById('previewFrame');
             // Obtener el documento del iframe
@@ -215,9 +277,10 @@
 
         // Función para descargar la página completa
         function downloadPage() {
-            const html = document.getElementById('html').value;
-            const css = document.getElementById('css').value;
-            const js = document.getElementById('js').value;
+            // Obtener el valor de los editores de Monaco
+            const html = htmlEditor ? htmlEditor.getValue() : '';
+            const css = cssEditor ? cssEditor.getValue() : '';
+            const js = jsEditor ? jsEditor.getValue() : '';
             
             const fullPage = `
                 <!DOCTYPE html>
@@ -298,6 +361,10 @@
                 if (editorWidthPercentage > 10 && editorWidthPercentage < 90) { // Limites del 10% al 90%
                     editorPanel.style.width = `${editorWidthPercentage}%`;
                     previewPanel.style.width = `${100 - editorWidthPercentage}%`;
+                    // Refrescar layout de Monaco para que se adapte al nuevo tamaño
+                    if (htmlEditor) htmlEditor.layout();
+                    if (cssEditor) cssEditor.layout();
+                    if (jsEditor) jsEditor.layout();
                 }
             }
         });
@@ -312,15 +379,15 @@
             container.style.pointerEvents = 'auto';
         });
 
-
-        // Actualizar la vista previa automáticamente al escribir en los textareas
-        const textareas = document.querySelectorAll('textarea');
-        textareas.forEach(textarea => {
-            textarea.addEventListener('input', updatePreview);
+        // Asegurar que Monaco Editor se redimensione cuando la ventana cambie de tamaño
+        window.addEventListener('resize', () => {
+            if (htmlEditor) htmlEditor.layout();
+            if (cssEditor) cssEditor.layout();
+            if (jsEditor) jsEditor.layout();
         });
 
-        // Inicializar la vista previa al cargar la página
-        window.onload = updatePreview;
+        // Monaco Editor ya tiene su propio listener de cambios para `updatePreview`
+        // No necesitamos los listeners `textarea.addEventListener('input', updatePreview)` antiguos.
     </script>
 </body>
 </html>
