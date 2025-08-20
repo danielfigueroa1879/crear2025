@@ -7,51 +7,53 @@
     <style>
         body {
             font-family: Arial, sans-serif;
-            margin: 0; /* Eliminar margen para que el container ocupe todo el ancho */
+            margin: 0;
             background-color: #1e1e1e;
             color: #e0e0e0;
-            display: flex; /* Usar flexbox para el cuerpo */
+            display: flex;
             flex-direction: column;
-            min-height: 100vh; /* Asegurar que el cuerpo ocupe al menos toda la altura de la ventana */
+            min-height: 100vh;
         }
         h1 {
             text-align: center;
             color: #ffffff;
-            padding: 20px;
-            margin-bottom: 0;
+            padding: 5px 0; /* Aún menos padding vertical */
+            margin-bottom: 0px; /* Eliminar margen inferior */
+            font-size: 1.8em; /* Tamaño de fuente más pequeño */
+            line-height: 1.1; /* Altura de línea más ajustada */
         }
-        p {
+        #description-text { /* ID para el párrafo descriptivo */
             text-align: center;
-            margin-bottom: 20px;
+            margin-bottom: 5px; /* Menos margen inferior para la descripción */
             padding: 0 20px;
+            font-size: 0.8em; /* Texto de descripción aún más pequeño */
+            transition: opacity 0.5s ease-out; /* Transición para que desaparezca suavemente */
         }
         .container {
-            flex: 1; /* El contenedor principal ocupará el espacio restante */
+            flex: 1;
             display: flex;
-            flex-wrap: nowrap; /* Evitar que los elementos se envuelvan */
-            gap: 0; /* Eliminar el gap entre los paneles */
-            margin: 0 20px 20px 20px; /* Margen para el contenedor principal */
-            border-radius: 8px; /* Bordes redondeados para el contenedor principal */
-            overflow: hidden; /* Ocultar el desbordamiento si los paneles se encogen demasiado */
-            background-color: #2d2d2d; /* Fondo para el contenedor para que el resizer se vea mejor */
+            flex-wrap: nowrap;
+            gap: 0;
+            margin: 0 20px 20px 20px;
+            border-radius: 8px;
+            overflow: hidden;
+            background-color: #2d2d2d;
         }
         .editor, .preview {
-            flex-grow: 1; /* Permitir que ambos crezcan */
+            flex-grow: 1;
             padding: 20px;
-            box-sizing: border-box; /* Incluir padding en el ancho */
+            box-sizing: border-box;
             min-width: 200px; /* Ancho mínimo para evitar que se colapsen */
             display: flex;
             flex-direction: column;
         }
         .editor {
-            border-right: none; /* Eliminar el borde derecho */
             background-color: #2d2d2d;
-            position: relative; /* Para el resizer */
+            position: relative;
         }
         .preview {
-            background-color: #ffffff; /* Fondo blanco para la vista previa */
-            color: #1e1e1e; /* Color de texto para la vista previa */
-            border-left: none; /* Eliminar el borde izquierdo */
+            background-color: #ffffff;
+            color: #1e1e1e;
             display: flex;
             flex-direction: column;
         }
@@ -61,14 +63,14 @@
             margin-bottom: 15px;
         }
         .preview h2 {
-            color: #1e1e1e; /* Color oscuro para el título en la vista previa */
+            color: #1e1e1e;
         }
-        .monaco-editor-container { /* Contenedor para cada instancia de Monaco Editor */
-            flex: 1; /* Ocupar el espacio disponible */
+        .monaco-editor-container {
+            flex: 1;
             margin-bottom: 15px;
             border: 1px solid #555;
             border-radius: 4px;
-            overflow: hidden; /* Asegurar que el editor no se desborde */
+            overflow: hidden;
         }
         label {
             color: #ffffff;
@@ -99,18 +101,18 @@
             background-color: #007B9A;
         }
         .resizer {
-            width: 8px; /* Ancho del resizer */
+            width: 8px;
             background-color: #444;
-            cursor: ew-resize; /* Cursor de redimensionamiento horizontal */
-            flex-shrink: 0; /* Evitar que el resizer se encoja */
+            cursor: ew-resize;
+            flex-shrink: 0;
             transition: background-color 0.2s ease;
         }
         .resizer:hover {
-            background-color: #008CBA; /* Color al pasar el ratón */
+            background-color: #008CBA;
         }
         iframe {
             width: 100%;
-            flex: 1; /* El iframe ocupará el espacio disponible */
+            flex: 1;
             border: 1px solid #ccc;
             background-color: #ffffff;
             border-radius: 4px;
@@ -119,24 +121,22 @@
 
         @media (max-width: 768px) {
             .container {
-                flex-direction: column; /* Cambiar a columna en pantallas pequeñas */
+                flex-direction: column;
                 margin: 20px;
             }
             .editor, .preview {
-                min-width: auto; /* Restablecer min-width */
-                width: 100%; /* Ocupar todo el ancho disponible */
+                min-width: auto;
+                width: 100%;
             }
             .resizer {
-                width: 100%; /* El resizer ocupará todo el ancho */
-                height: 8px; /* Altura del resizer en modo columna */
-                cursor: ns-resize; /* Cursor de redimensionamiento vertical */
+                width: 100%;
+                height: 8px;
+                cursor: ns-resize;
             }
             .editor {
-                border-right: none;
-                border-bottom: 1px solid #444; /* Añadir un borde inferior en modo columna */
+                border-bottom: 1px solid #444;
             }
             .preview {
-                border-left: none;
                 border-top: none;
             }
         }
@@ -144,7 +144,7 @@
 </head>
 <body>
     <h1>Creador de Páginas Web con IA</h1>
-    <p>Esta herramienta facilita la creación de páginas web para todos. Ingresa tu contenido en HTML, CSS y JavaScript, y visualiza el resultado en tiempo real. Puedes descargar la página generada como un archivo HTML completo.</p>
+    <p id="description-text">Esta herramienta facilita la creación de páginas web para todos. Ingresa tu contenido en HTML, CSS y JavaScript, y visualiza el resultado en tiempo real. Puedes descargar la página generada como un archivo HTML completo.</p>
     
     <div class="container">
         <div class="editor" id="editorPanel">
@@ -161,7 +161,7 @@
             <button id="downloadBtn" onclick="downloadPage()">Descargar Página Web</button>
         </div>
         
-        <div class="resizer" id="resizer"></div> <!-- Divisor redimensionable -->
+        <div class="resizer" id="resizer"></div>
 
         <div class="preview" id="previewPanel">
             <h2>Vista Previa</h2>
@@ -169,7 +169,6 @@
         </div>
     </div>
 
-    <!-- Cargar Monaco Editor -->
     <script src="https://cdnjs.cloudflare.com/ajax/libs/monaco-editor/0.34.1/min/vs/loader.min.js"></script>
     <script>
         let htmlEditor, cssEditor, jsEditor; // Variables para almacenar las instancias de los editores
@@ -226,7 +225,7 @@ p {
     // const greetingElement = document.querySelector('h1');
     // greetingElement.addEventListener('click', () => {
     //     // Usar un modal en lugar de alert para mejor UX
-    //     showModal('¡Has hecho clic en el saludo!');
+    //     // showModal('¡Has hecho clic en el saludo!');
     // });
 });`,
                 language: 'javascript',
@@ -246,13 +245,11 @@ p {
 
         // Función para actualizar la vista previa
         function updatePreview() {
-            // Obtener el valor de los editores de Monaco
             const html = htmlEditor ? htmlEditor.getValue() : '';
             const css = cssEditor ? cssEditor.getValue() : '';
             const js = jsEditor ? jsEditor.getValue() : '';
             
             const preview = document.getElementById('previewFrame');
-            // Obtener el documento del iframe
             const doc = preview.contentDocument || preview.contentWindow.document;
             
             doc.open();
@@ -277,7 +274,6 @@ p {
 
         // Función para descargar la página completa
         function downloadPage() {
-            // Obtener el valor de los editores de Monaco
             const html = htmlEditor ? htmlEditor.getValue() : '';
             const css = cssEditor ? cssEditor.getValue() : '';
             const js = jsEditor ? jsEditor.getValue() : '';
@@ -318,50 +314,37 @@ p {
 
         let isResizing = false;
 
-        // Iniciar el redimensionamiento al presionar el botón del mouse
         resizer.addEventListener('mousedown', (e) => {
             isResizing = true;
-            // Añadir clases para indicar que se está redimensionando
             document.body.style.cursor = 'ew-resize';
-            container.style.userSelect = 'none'; // Evitar selección de texto durante el redimensionamiento
-            container.style.pointerEvents = 'none'; // Evitar que los eventos de mouse afecten los hijos
+            container.style.userSelect = 'none';
+            container.style.pointerEvents = 'none';
         });
 
-        // Manejar el movimiento del mouse
         document.addEventListener('mousemove', (e) => {
             if (!isResizing) return;
 
-            // Detectar si estamos en modo columna (móvil) o fila (escritorio)
             const isColumnLayout = window.matchMedia("(max-width: 768px)").matches;
 
             if (isColumnLayout) {
-                // Redimensionamiento vertical para diseño en columna
                 const containerRect = container.getBoundingClientRect();
                 const newHeight = e.clientY - containerRect.top;
-                
-                // Calcular porcentajes para la altura
                 const totalHeight = containerRect.height;
                 const editorHeightPercentage = (newHeight / totalHeight) * 100;
                 
-                // Limitar el tamaño mínimo y máximo
                 if (editorHeightPercentage > 10 && editorHeightPercentage < 90) {
                     editorPanel.style.height = `${editorHeightPercentage}%`;
                     previewPanel.style.height = `${100 - editorHeightPercentage}%`;
                 }
             } else {
-                // Redimensionamiento horizontal para diseño en fila
                 const containerRect = container.getBoundingClientRect();
                 const newWidth = e.clientX - containerRect.left;
-                
-                // Calcular porcentajes para el ancho
                 const totalWidth = containerRect.width;
                 const editorWidthPercentage = (newWidth / totalWidth) * 100;
                 
-                // Limitar el tamaño mínimo y máximo
-                if (editorWidthPercentage > 10 && editorWidthPercentage < 90) { // Limites del 10% al 90%
+                if (editorWidthPercentage > 10 && editorWidthPercentage < 90) {
                     editorPanel.style.width = `${editorWidthPercentage}%`;
                     previewPanel.style.width = `${100 - editorWidthPercentage}%`;
-                    // Refrescar layout de Monaco para que se adapte al nuevo tamaño
                     if (htmlEditor) htmlEditor.layout();
                     if (cssEditor) cssEditor.layout();
                     if (jsEditor) jsEditor.layout();
@@ -369,25 +352,33 @@ p {
             }
         });
 
-        // Detener el redimensionamiento al soltar el botón del mouse
         document.addEventListener('mouseup', () => {
             if (!isResizing) return;
             isResizing = false;
-            // Restaurar clases de estilo
             document.body.style.cursor = 'default';
             container.style.userSelect = 'auto';
             container.style.pointerEvents = 'auto';
         });
 
-        // Asegurar que Monaco Editor se redimensione cuando la ventana cambie de tamaño
         window.addEventListener('resize', () => {
             if (htmlEditor) htmlEditor.layout();
             if (cssEditor) cssEditor.layout();
             if (jsEditor) jsEditor.layout();
         });
 
-        // Monaco Editor ya tiene su propio listener de cambios para `updatePreview`
-        // No necesitamos los listeners `textarea.addEventListener('input', updatePreview)` antiguos.
+        // Lógica para hacer desaparecer el párrafo descriptivo después de 10 segundos
+        document.addEventListener('DOMContentLoaded', () => {
+            const descriptionText = document.getElementById('description-text');
+            if (descriptionText) {
+                setTimeout(() => {
+                    descriptionText.style.opacity = '0'; // Iniciar la transición de opacidad
+                    // Después de que la transición termine, ocultar completamente el elemento
+                    descriptionText.addEventListener('transitionend', () => {
+                        descriptionText.style.display = 'none';
+                    }, { once: true }); // Escuchar el evento solo una vez
+                }, 10000); // 10 segundos
+            }
+        });
     </script>
 </body>
 </html>
